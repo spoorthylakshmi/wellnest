@@ -1,11 +1,14 @@
 <!DOCTYPE html>
-<html></html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WellNest | Home</title>
- <style>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
   /* 🌿 General Reset */
 * {
   margin: 0;
@@ -144,17 +147,13 @@ nav a.active {
 .cta { text-align:center; background: linear-gradient(to right, #a7f3d0, #d8f3dc); padding:3rem 2rem }
 .cta h3 { font-size:1.8rem; color:#1b4332; margin-bottom:1rem }
 
-<<<<<<< HEAD
-/* � Footer */
-=======
-/* 🔻 Footer */
->>>>>>> f1fd6429076b3e859d8499d47dce98ddaf7ad244
+/* Footer */
 footer { text-align:center; padding:1.5rem; background:#e8f5e9; color:#333; font-size:0.9rem }
 footer a { color:#2e7d32; text-decoration:none }
 footer a:hover { text-decoration:underline }
 footer strong { color:#1b5e20 }
 
- </style>
+  </style>
 </head>
 <body>
   <!-- Navbar -->
@@ -175,6 +174,8 @@ footer strong { color:#1b5e20 }
         <li><a href="profile.html">Profile</a></li>
       </ul>
     </nav>
+    <!-- Theme toggle -->
+    <button id="theme-toggle" aria-label="Toggle theme" style="background:transparent;border:none;font-size:1.2rem;cursor:pointer;padding:8px;margin-left:12px">🌙</button>
   </header>
 
   <!-- Hero Section -->
@@ -261,8 +262,102 @@ footer strong { color:#1b5e20 }
 
   <!-- Footer -->
   <footer>
-  <p><a href="about.html">About Us</a> | <a href="contact.html">Contact</a> | <a href="privacy.html">Privacy Policy</a></p>
+    <p><a href="about.html">About Us</a> | <a href="contact.html">Contact</a> | <a href="privacy.html">Privacy Policy</a></p>
     <p>Developed by <strong>AlphaWave</strong> for Code Manthan 2025</p>
   </footer>
+  <!-- Dark mode script: remembers preference and respects system pref -->
+  <script>
+    (function(){
+      const root = document.documentElement;
+      const toggle = document.getElementById('theme-toggle');
+      if(!toggle) return;
+
+      function setDark(active){
+        if(active){
+          root.setAttribute('data-preferred-theme','dark');
+          toggle.textContent = '☀️';
+        } else {
+          root.removeAttribute('data-preferred-theme');
+          toggle.textContent = '🌙';
+        }
+      }
+
+      // Initialize from saved preference or system preference
+      const saved = localStorage.getItem('preferred-theme');
+      if(saved === 'dark' || (saved === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)){
+        setDark(true);
+      } else {
+        setDark(false);
+      }
+
+      toggle.addEventListener('click', function(){
+        const isDark = root.getAttribute('data-preferred-theme') === 'dark';
+        setDark(!isDark);
+        localStorage.setItem('preferred-theme', !isDark ? 'dark' : 'light');
+      });
+    })();
+  </script>
+
+  <style>
+  /* Dark theme overrides for existing inline styles */
+  [data-preferred-theme="dark"] body {
+    background: linear-gradient(135deg,#071016,#0b1720);
+    color: #d7e7e3;
+  }
+
+  [data-preferred-theme="dark"] .navbar {
+    background: rgba(10,14,18,0.7);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.6);
+    color: #d7e7e3;
+  }
+
+  [data-preferred-theme="dark"] .logo { color: #86e0b8 }
+
+  [data-preferred-theme="dark"] nav a {
+    color: #cfeee0;
+  }
+
+  [data-preferred-theme="dark"] nav a:hover {
+    background: rgba(134,224,184,0.12);
+    color: #fff;
+  }
+
+  [data-preferred-theme="dark"] .hero {
+    background: linear-gradient(180deg,#071018 0%, #071728 100%);
+  }
+
+  [data-preferred-theme="dark"] .hero-left h2 { color: #bfead3 }
+  [data-preferred-theme="dark"] .hero-left p.lead { color: #b9d7cc }
+
+  [data-preferred-theme="dark"] .card,
+  [data-preferred-theme="dark"] .chart,
+  [data-preferred-theme="dark"] .journal-info,
+  [data-preferred-theme="dark"] .dashboard-content .chart {
+    background: rgba(12,18,22,0.6);
+    border-color: rgba(255,255,255,0.04);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+    color: #d7e7e3;
+  }
+
+  [data-preferred-theme="dark"] .card p,
+  [data-preferred-theme="dark"] .journal-info p,
+  [data-preferred-theme="dark"] footer,
+  [data-preferred-theme="dark"] .muted { color: #9fbfb3 }
+
+  [data-preferred-theme="dark"] .btn-primary {
+    background: linear-gradient(90deg,#2aa77a,#57c69a);
+    color: #03110b;
+  }
+
+  [data-preferred-theme="dark"] .btn-secondary {
+    border: 2px solid rgba(86,196,153,0.18);
+    color: #a7e6c9;
+  }
+
+  [data-preferred-theme="dark"] footer { background: transparent; color: #9fbfb3 }
+
+  /* small adjustment for the toggle button when dark */
+  [data-preferred-theme="dark"] #theme-toggle { color: #fffb; }
+  </style>
 </body>
 </html>
