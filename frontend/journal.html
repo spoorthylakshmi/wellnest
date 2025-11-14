@@ -72,6 +72,24 @@
     .entry-card strong{display:block;color:var(--primary);margin-bottom:.25rem}
     @media(max-width:640px){.controls{flex-direction:column;align-items:stretch}input[type=number]{width:100%}}
   </style>
+
+  <!-- Dark-theme overrides -->
+  <style>
+  [data-preferred-theme="dark"] body { background: linear-gradient(135deg,#071016,#0b1720); color: #d7e7e3; }
+  [data-preferred-theme="dark"] .navbar { background: rgba(10,14,18,0.75); box-shadow: 0 2px 10px rgba(0,0,0,0.6); }
+  [data-preferred-theme="dark"] .logo { color: #86e0b8 }
+  [data-preferred-theme="dark"] nav a { color: #cfeee0 }
+  [data-preferred-theme="dark"] nav a:hover { background: rgba(134,224,184,0.12); color: #fff }
+  [data-preferred-theme="dark"] .content { background: rgba(12,18,22,0.6); color: #d7e7e3; box-shadow: 0 8px 24px rgba(0,0,0,0.6); }
+  [data-preferred-theme="dark"] h2 { color: #86e0b8 }
+  [data-preferred-theme="dark"] label { color: #d7e7e3 }
+  [data-preferred-theme="dark"] textarea, [data-preferred-theme="dark"] input[type="number"] { background: #0f1f28; border: 1px solid rgba(126,227,198,0.12); color: #d7e7e3; }
+  [data-preferred-theme="dark"] textarea:focus, [data-preferred-theme="dark"] input[type="number"]:focus { border-color: #86e0b8; box-shadow: 0 0 8px rgba(134,224,184,0.2); }
+  [data-preferred-theme="dark"] .button { background: linear-gradient(90deg,#2aa77a,#57c69a); color: #03110b }
+  [data-preferred-theme="dark"] .button.ghost { background: transparent; color: #a7e6c9; border-color: rgba(86,196,153,0.18) }
+  [data-preferred-theme="dark"] .entry-card { background: linear-gradient(180deg,rgba(134,224,184,0.08),transparent); border-left-color: #7ee3c6; }
+  [data-preferred-theme="dark"] .entry-card strong { color: #86e0b8 }
+  </style>
 </head>
 <body>
  <header class="navbar">
@@ -91,6 +109,8 @@
         <li><a href="profile.html">Profile</a></li>
       </ul>
     </nav>
+    <!-- Theme toggle -->
+    <button id="theme-toggle" aria-label="Toggle theme" style="background:transparent;border:none;font-size:1.2rem;cursor:pointer;padding:8px;margin-left:12px">🌙</button>
   </header>
   <div class="content">
     <h2>Journal</h2>
@@ -148,5 +168,20 @@
       })();
     </script>
   </div>
+
+<!-- Theme script: remembers preference and respects system preference -->
+<script>
+  (function(){
+    const root = document.documentElement;
+    const toggle = document.getElementById('theme-toggle');
+    const stored = localStorage.getItem('preferred-theme');
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const current = stored || (prefersDark ? 'dark' : 'light');
+    root.setAttribute('data-preferred-theme', current);
+    function updateToggle(){ if(!toggle) return; toggle.textContent = root.getAttribute('data-preferred-theme') === 'dark' ? '🌙' : '☀️'; toggle.classList.toggle('is-dark', root.getAttribute('data-preferred-theme') === 'dark'); }
+    if(toggle){ toggle.addEventListener('click', ()=>{ const next = root.getAttribute('data-preferred-theme') === 'dark' ? 'light' : 'dark'; root.setAttribute('data-preferred-theme', next); localStorage.setItem('preferred-theme', next); updateToggle(); }); }
+    updateToggle();
+  })();
+</script>
 </body>
 </html>
