@@ -3,107 +3,91 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WellNest | Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Interactive Wellness Tracker</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-     .navbar {
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f5f7fa;
+      margin: 30px;
+    }
+    h1 {
+      margin-top: 5%;
+      text-align: center;
+    }
+    .chart-container {
+      width: 80%;
+      max-width: 700px;
+      margin: 30px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    form {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #ffffffc9;
-      padding: 1rem 2rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      backdrop-filter: blur(8px);
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+    input, select, button {
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+    button {
+      background: #36A2EB;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #2b8ad6;
+    }
+    canvas {
+      width: 100% !important;
+      height: 350px !important;
     }
 
-    .logo {
-      font-size: 1.7rem;
-      color: var(--primary);
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
+ nav ul {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: flex-end; /* moves nav items to the right */
+}
 
-    .logo-svg {
-      width: 40px;
-      height: 40px;
-    }
+nav a {
+  text-decoration: none;
+  color: #334155;
+  font-weight: 600;
+  padding: 0.45rem 0.75rem;
+  border-radius: 8px;
+  transition: color 0.18s ease, background 0.18s ease, transform 0.12s ease;
+  font-size: 0.95rem;
+}
 
-    nav ul { list-style: none; display: flex; gap: 1.5rem; margin: 0; padding: 0; }
+nav a:hover {
+  color: #ffffff;
+  background: #2e7d32;
+  transform: translateY(-6px);
+}
 
-    nav a {
-      text-decoration: none;
-      color: #334155;
-      font-weight: 600;
-      padding: 0.45rem 0.75rem;
-      border-radius: 8px;
-      transition: color 0.18s ease, background 0.18s ease, transform 0.12s ease;
-      font-size: 0.95rem;
-    }
+nav a.active {
+  background: linear-gradient(90deg,#2e7d32,#81c784);
+  color: #fff;
+}
 
-    nav a:hover {
-      color: #ffffff;
-      background: #2e7d32;
-      transform: translateY(-2px);
-    }
-
-    nav a.active { background: linear-gradient(90deg,#2e7d32,#81c784); color: #fff; }
-    :root{--primary:#2e7d32;--muted:#4b5563;--bg:linear-gradient(135deg,#f0fdf4 0%, #e8f6ff 100%)}
-    body{font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;background:var(--bg);color:#111;margin:0}
-    .navbar{background:white;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
-    .logo{color:var(--primary);font-weight:700}
-    .content{max-width:1100px;margin:2.4rem auto;padding:0 1.5rem}
-    #welcome{font-size:1.2rem;color:var(--primary);text-align:center;margin-bottom:1.25rem}
-    .dashboard-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.5rem;margin-bottom:1.5rem}
-    .dashboard-card{background:white;padding:1.5rem;border-radius:12px;box-shadow:0 8px 20px rgba(14,30,37,0.06);border:1px solid rgba(46,125,50,0.06)}
-    .card-header{display:flex;align-items:center;gap:.9rem;margin-bottom:1rem}
-    .card-icon{font-size:1.6rem;padding:.6rem;border-radius:8px;background:rgba(46,125,50,0.06)}
-    .card-title{color:var(--primary);margin:0;font-weight:700}
-    .stats-grid{display:flex;gap:.75rem}
-    .stat-item{flex:1;padding:.8rem;background:linear-gradient(180deg,rgba(46,125,50,0.03),transparent);border-radius:8px;text-align:center}
-    .stat-value{font-size:1.4rem;font-weight:700;color:var(--primary)}
-    .stat-label{font-size:.85rem;color:var(--muted)}
-    .action-buttons{display:flex;gap:.75rem;margin-top:1rem}
-    .btn{padding:.6rem 1rem;border-radius:8px;text-decoration:none;text-align:center;display:inline-block}
-    .btn-primary{background:var(--primary);color:white}
-    .btn-secondary{background:transparent;border:2px solid var(--primary);color:var(--primary)}
-    .recent-entries{margin-top:1rem}
-    .entry-item{padding:.9rem;border-left:3px solid var(--primary);background:linear-gradient(90deg,rgba(46,125,50,0.03),transparent);border-radius:0 8px 8px 0;margin-bottom:.9rem}
-    @media(max-width:760px){.stats-grid{flex-direction:column}}
   </style>
 
-  <!-- Dark-theme overrides -->
-  <style>
-  [data-preferred-theme="dark"] body { background: linear-gradient(135deg,#071016,#0b1720); color: #d7e7e3; }
-  [data-preferred-theme="dark"] .navbar { background: rgba(10,14,18,0.75); box-shadow: 0 2px 10px rgba(0,0,0,0.6); }
-  [data-preferred-theme="dark"] .logo { color: #86e0b8 }
-  [data-preferred-theme="dark"] nav a { color: #cfeee0 }
-  [data-preferred-theme="dark"] nav a:hover { background: rgba(134,224,184,0.12); color: #fff }
-  [data-preferred-theme="dark"] #welcome { color: #86e0b8 }
-  [data-preferred-theme="dark"] .dashboard-card { background: rgba(12,18,22,0.6); box-shadow: 0 8px 24px rgba(0,0,0,0.6); border-color: rgba(255,255,255,0.04); color: #d7e7e3; }
-  [data-preferred-theme="dark"] .card-title { color: #86e0b8 }
-  [data-preferred-theme="dark"] .stat-value { color: #7ee3c6 }
-  [data-preferred-theme="dark"] .stat-label { color: #9fbfb3 }
-  [data-preferred-theme="dark"] .btn { color: #d7e7e3 }
-  [data-preferred-theme="dark"] .btn-primary { background: linear-gradient(90deg,#2aa77a,#57c69a); color: #03110b }
-  [data-preferred-theme="dark"] .btn-secondary { border-color: rgba(86,196,153,0.18); color: #a7e6c9 }
-  [data-preferred-theme="dark"] .entry-item { border-left-color: #7ee3c6; background: linear-gradient(90deg,rgba(134,224,184,0.08),transparent); }
-  </style>
+
+
+
 </head>
 <body>
-   <header class="navbar">
-    <h1 class="logo">
-      <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M50 5C25.2 5 5 25.2 5 50s20.2 45 45 45 45-20.2 45-45S74.8 5 50 5zm0 80c-19.9 0-36-16.1-36-36s16.1-36 36-36 36 16.1 36 36-16.1 36-36 36z" fill="currentColor"/>
-        <path d="M65 35c-4.4 0-8.3 2.3-10.5 5.7C52.3 37.3 48.4 35 44 35c-7.2 0-13 5.8-13 13 0 11.4 18.5 22 19 22s19-10.6 19-22c0-7.2-5.8-13-13-13zm-21 13c0-3.9 3.1-7 7-7s7 3.1 7 7h-14zm21 0h-14c0-3.9 3.1-7 7-7s7 3.1 7 7z" fill="currentColor"/>
-      </svg>
-      WellNest 🌿
-    </h1>
-    <nav>
+
+  <nav>
       <ul>
         <li><a href="index.html">Home</a></li>
         <li><a href="dashboard.html">Dashboard</a></li>
@@ -112,66 +96,125 @@
         <li><a href="profile.html">Profile</a></li>
       </ul>
     </nav>
-    <!-- Theme toggle -->
-    <button id="theme-toggle" aria-label="Toggle theme" style="background:transparent;border:none;font-size:1.2rem;cursor:pointer;padding:8px;margin-left:12px">🌙</button>
-  </header>
-  <div class="content">
-    <p id="welcome">Loading your personalized wellness dashboard...</p>
+    
 
-    <div class="dashboard-container">
-      <div class="dashboard-card">
-        <div class="card-header"><div class="card-icon">🌙</div><h3 class="card-title">Sleep Insights</h3></div>
-        <div class="stats-grid">
-          <div class="stat-item"><div class="stat-value">7.5h</div><div class="stat-label">Avg sleep</div></div>
-          <div class="stat-item"><div class="stat-value">82%</div><div class="stat-label">Sleep quality</div></div>
-        </div>
-        <div class="action-buttons"><a class="btn btn-primary" href="#">Track Sleep</a><a class="btn btn-secondary" href="#">View History</a></div>
-      </div>
+  <h1>🌿 Interactive Wellness Tracker</h1>
 
-      <div class="dashboard-card">
-        <div class="card-header"><div class="card-icon">💧</div><h3 class="card-title">Hydration</h3></div>
-        <div class="stats-grid">
-          <div class="stat-item"><div class="stat-value">1.9L</div><div class="stat-label">Today</div></div>
-          <div class="stat-item"><div class="stat-value">76%</div><div class="stat-label">Goal</div></div>
-        </div>
-        <div class="action-buttons"><a class="btn btn-primary" href="#">Add Water</a><a class="btn btn-secondary" href="#">Set Goal</a></div>
-      </div>
+  <form id="dataForm">
+    <label>
+      Day:
+      <select id="day">
+        <option>Mon</option>
+        <option>Tue</option>
+        <option>Wed</option>
+        <option>Thu</option>
+        <option>Fri</option>
+        <option>Sat</option>
+        <option>Sun</option>
+      </select>
+    </label>
+    <input type="number" id="sleep" placeholder="Sleep (hours)" step="0.1" min="0" />
+    <input type="number" id="water" placeholder="Water (liters)" step="0.1" min="0" />
+    <input type="number" id="mood" placeholder="Mood (1-5)" step="1" min="1" max="5" />
+    <button type="submit">Add / Update</button>
+  </form>
 
-      <div class="dashboard-card">
-        <div class="card-header"><div class="card-icon">🎯</div><h3 class="card-title">Recent Journals</h3></div>
-        <div id="recent" class="recent-entries"><!-- entries inserted here --></div>
-        <div class="action-buttons"><a class="btn btn-primary" href="journal.html">New entry</a><a class="btn btn-secondary" href="ai-insights.html">View Insights</a></div>
-      </div>
-    </div>
-
-    <div style="display:flex;gap:1rem;justify-content:center;margin-top:1rem;flex-wrap:wrap">
-      <a class="btn btn-primary" href="profile.html">View profile</a>
-      <a class="btn btn-secondary" href="index.html">Back to home</a>
-    </div>
-
-    <script>
-      (function(){
-        const current = localStorage.getItem('wellnest_current_user');
-        const welcomeEl = document.getElementById('welcome');
-        const recent = document.getElementById('recent');
-        if(current){
-          const users = JSON.parse(localStorage.getItem('wellnest_users')||'{}');
-          const user = users[current];
-          welcomeEl.textContent = 'Welcome back, ' + (user?user.name:'') + '!';
-          const journals = JSON.parse(localStorage.getItem('wellnest_journals_'+current) || '[]');
-          if(journals.length===0){ recent.innerHTML='<p style="color:var(--muted)">No journal entries yet. Start journaling to see insights.</p>'; }
-          else{
-            recent.innerHTML = journals.slice(-5).reverse().map(j=> '<div class="entry-item"><div class="entry-date">'+j.date+'</div><div>'+ (j.text.length>120? j.text.slice(0,120)+'...': j.text) +'</div></div>').join('');
-          }
-        } else {
-          welcomeEl.textContent = 'Welcome! Please sign up or log in to see personalized data.';
-          recent.innerHTML = '<p style="color:var(--muted)">Sign up to start tracking your wellness.</p>';
-        }
-      })();
-    </script>
+  <div class="chart-container">
+    <h2>💤 Sleep Hours</h2>
+    <canvas id="sleepChart"></canvas>
   </div>
 
-<!-- Theme script: remembers preference and respects system preference -->
+  <div class="chart-container">
+    <h2>💧 Water Intake</h2>
+    <canvas id="waterChart"></canvas>
+  </div>
+
+  <div class="chart-container">
+    <h2>😊 Mood Over Time</h2>
+    <canvas id="moodChart"></canvas>
+  </div>
+
+  <script>
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+    // Default data
+    const sleepData = [0,0, 0,0, 0, 0, 0];
+    const waterData =[0,0, 0,0, 0, 0, 0] ;
+    const moodData  = [0,0, 0,0, 0, 0, 0];
+
+    // Initialize charts
+    const sleepChart = new Chart(document.getElementById('sleepChart'), {
+      type: 'line',
+      data: {
+        labels: days,
+        datasets: [{
+          label: 'Hours of Sleep',
+          data: sleepData,
+          fill: true,
+          borderColor: '#36A2EB',
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          tension: 0.4
+        }]
+      },
+      options: { scales: { y: { beginAtZero: true, suggestedMax: 10 } } }
+    });
+
+    const waterChart = new Chart(document.getElementById('waterChart'), {
+      type: 'bar',
+      data: {
+        labels: days,
+        datasets: [{
+          label: 'Water Intake (L)',
+          data: waterData,
+          backgroundColor: 'rgba(75, 192, 192, 0.6)',
+          borderRadius: 6
+        }]
+      },
+      options: { scales: { y: { beginAtZero: true, suggestedMax: 3 } } }
+    });
+
+    const moodChart = new Chart(document.getElementById('moodChart'), {
+      type: 'line',
+      data: {
+        labels: days,
+        datasets: [{
+          label: 'Mood (1–5)',
+          data: moodData,
+          borderColor: '#FF6384',
+          backgroundColor: 'rgba(255, 99, 132, 0.2)',
+          tension: 0.4,
+          fill: true
+        }]
+      },
+      options: { scales: { y: { min: 1, max: 5 } } }
+    });
+
+    // Handle form submission
+    document.getElementById('dataForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const day = document.getElementById('day').value;
+      const sleep = parseFloat(document.getElementById('sleep').value);
+      const water = parseFloat(document.getElementById('water').value);
+      const mood = parseInt(document.getElementById('mood').value);
+
+      const index = days.indexOf(day);
+
+      // Update data only if user entered something
+      if (!isNaN(sleep)) sleepData[index] = sleep;
+      if (!isNaN(water)) waterData[index] = water;
+      if (!isNaN(mood)) moodData[index] = mood;
+
+      // Update all charts
+      sleepChart.update();
+      waterChart.update();
+      moodChart.update();
+
+      // Clear inputs
+      e.target.reset();
+    });
+  </script>
+
 <script>
   (function(){
     const root = document.documentElement;
@@ -185,5 +228,6 @@
     updateToggle();
   })();
 </script>
+
 </body>
 </html>
