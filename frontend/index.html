@@ -81,7 +81,7 @@ nav a.active {
   color: #fff;
 }
 
-/* 🌼 Hero - simple & professional */
+/*  Hero - simple & professional */
 .hero {
   display:flex;
   align-items:center;
@@ -112,7 +112,7 @@ nav a.active {
   .hero-left h2 { font-size:1.6rem }
 }
 
-/* 🌟 Features Section - STACKED (one after another) */
+/*  Features Section - STACKED (one after another) */
 .features { text-align:center; padding:3rem 2rem; }
 .features h3 { color:#1b4332; font-size:1.8rem; margin-bottom:2rem }
 
@@ -176,7 +176,7 @@ nav a.active {
   .card p { font-size: 0.95rem; }
 }
 
-/* 📊 Dashboard Preview */
+/* Dashboard Preview */
 .dashboard { padding:5rem 2rem; background: linear-gradient(135deg, #f0fdf4 0%, #e8f6ff 100%); position:relative; overflow:hidden }
 .dashboard::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background: linear-gradient(to right, transparent, rgba(46,125,50,0.15), transparent) }
 .dashboard h3 { text-align:center; font-size:2.2rem; color:#1b4332; margin-bottom:3rem }
@@ -194,7 +194,7 @@ nav a.active {
   .chart { min-height:240px }
 }
 
-/* 💚 Call to Action */
+/*  Call to Action */
 .cta { text-align:center; background: linear-gradient(to right, #a7f3d0, #d8f3dc); padding:3rem 2rem }
 .cta h3 { font-size:1.8rem; color:#1b4332; margin-bottom:1rem }
 
@@ -261,7 +261,7 @@ footer strong { color:#1b5e20 }
       </div>
 
       <!-- 2 -->
-      <div class="card" style="background-image:url('wtr22.jpg.jpg');">
+      <div class="card" style="background-image:url('water22jpg.jpg');">
         <h4>Hydration Monitor</h4>
         <p>Stay hydrated with smart reminders and track your daily water intake. Set personalized goals based on your activity level and climate.</p>
         <a href="dashboard.html#hydration" class="learn-more">View Hydration Tools</a>
@@ -302,9 +302,15 @@ footer strong { color:#1b5e20 }
            🎯 Personalized goals<br>
            📈 Progress tracking<br>
            🤖 AI-powered insights</p>
-        <div style="display: flex; gap: 1rem;">
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
           <a class="btn-primary" href="dashboard.html" style="text-decoration:none; display:inline-block;">View Full Dashboard</a>
           <a class="btn-secondary" href="signup.html" style="text-decoration:none; display:inline-block;">Start Tracking</a>
+          <!-- Emotion detector -->
+          <div class="emotion-detector" style="display:flex;align-items:center;gap:.5rem;margin-left:1rem">
+            <input id="inputText" class="emotion-input" type="text" placeholder="How are you feeling?" style="padding:.6rem;border-radius:8px;border:1px solid rgba(46,125,50,0.08);min-width:220px">
+            <button class="btn btn-primary emotion-btn" onclick="predictEmotion()" style="padding:.55rem .9rem;border-radius:8px">Detect Emotion</button>
+          </div>
+          <p id="result" style="margin:0;padding-left:8px;color:#2e7d32;font-weight:600"></p>
         </div>
       </div>
     </div>
@@ -332,9 +338,11 @@ footer strong { color:#1b5e20 }
       function setDark(active){
         if(active){
           root.setAttribute('data-preferred-theme','dark');
-          toggle.textContent = '☀️';
+          root.classList.add('dark');
+          toggle.textContent = '☀';
         } else {
           root.removeAttribute('data-preferred-theme');
+          root.classList.remove('dark');
           toggle.textContent = '🌙';
         }
       }
@@ -343,8 +351,10 @@ footer strong { color:#1b5e20 }
       const saved = localStorage.getItem('preferred-theme');
       if(saved === 'dark' || (saved === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)){
         setDark(true);
+        if (saved === null) localStorage.setItem('preferred-theme','dark');
       } else {
         setDark(false);
+        if (saved === null) localStorage.setItem('preferred-theme','light');
       }
 
       toggle.addEventListener('click', function(){
@@ -355,66 +365,97 @@ footer strong { color:#1b5e20 }
     })();
   </script>
 
+  <script>
+    async function predictEmotion() {
+      const userText = document.getElementById("inputText")?.value || '';
+      const resultEl = document.getElementById("result");
+      if (!userText || !userText.trim()) {
+        if (resultEl) resultEl.innerText = 'Please enter text to analyze.';
+        return;
+      }
+      if (resultEl) resultEl.innerText = 'Detecting...';
+
+      try {
+        const response = await fetch('http://127.0.0.1:5000/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: userText })
+        });
+
+        if (!response.ok) {
+          let err = 'Request failed';
+          try { const j = await response.json(); if (j && j.error) err = j.error; } catch(e){}
+          if (resultEl) resultEl.innerText = 'Error: ' + err;
+          return;
+        }
+
+        const json = await response.json();
+        const emotion = json?.emotion || json?.predicted_label || 'unknown';
+        if (resultEl) resultEl.innerText = 'Emotion: ' + emotion;
+      } catch (e) {
+        if (resultEl) resultEl.innerText = 'Network error: ' + (e.message || e);
+      }
+    }
+  </script>
+
   <style>
-  /* Dark theme overrides for existing inline styles */
-  [data-preferred-theme="dark"] body {
-    background: linear-gradient(135deg,#071016,#0b1720);
-    color: #d7e7e3;
+  /* Dark theme overrides for existing inline styles (use .dark for stronger targeting).
+     Many elements in this file use inline styles; some rules use !important to override them. */
+  .dark body {
+    background: linear-gradient(135deg,#071016,#0b1720) !important;
+    color: #d7e7e3 !important;
   }
 
-  [data-preferred-theme="dark"] .navbar {
-    background: rgba(10,14,18,0.7);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.6);
-    color: #d7e7e3;
+  .dark .navbar {
+    background: rgba(10,14,18,0.85) !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.6) !important;
+    color: #d7e7e3 !important;
   }
 
-  [data-preferred-theme="dark"] .logo { color: #86e0b8 }
+  .dark .logo { color: #86e0b8 !important }
 
-  [data-preferred-theme="dark"] nav a {
-    color: #cfeee0;
+  .dark nav a { color: #cfeee0 !important }
+
+  .dark nav a:hover { background: rgba(134,224,184,0.12) !important; color: #fff !important }
+
+  .dark .hero { background: linear-gradient(180deg,#071018 0%, #071728 100%) !important }
+  .dark .hero-left h2 { color: #bfead3 !important }
+  .dark .hero-left p.lead { color: #b9d7cc !important }
+
+  .dark .card,
+  .dark .chart,
+  .dark .journal-info,
+  .dark .dashboard-content .chart {
+    background: rgba(12,18,22,0.6) !important;
+    border-color: rgba(255,255,255,0.04) !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.6) !important;
+    color: #d7e7e3 !important;
   }
 
-  [data-preferred-theme="dark"] nav a:hover {
-    background: rgba(134,224,184,0.12);
-    color: #fff;
-  }
+  .dark .card p,
+  .dark .journal-info p,
+  .dark footer,
+  .dark .muted { color: #9fbfb3 !important }
 
-  [data-preferred-theme="dark"] .hero {
-    background: linear-gradient(180deg,#071018 0%, #071728 100%);
-  }
+  .dark .btn-primary { background: linear-gradient(90deg,#2aa77a,#57c69a) !important; color: #03110b !important }
+  .dark .btn-secondary { border: 2px solid rgba(86,196,153,0.18) !important; color: #a7e6c9 !important }
 
-  [data-preferred-theme="dark"] .hero-left h2 { color: #bfead3 }
-  [data-preferred-theme="dark"] .hero-left p.lead { color: #b9d7cc }
+  .dark footer { background: transparent !important; color: #9fbfb3 !important }
+  .dark #theme-toggle { color: #fffb !important }
 
-  [data-preferred-theme="dark"] .card,
-  [data-preferred-theme="dark"] .chart,
-  [data-preferred-theme="dark"] .journal-info,
-  [data-preferred-theme="dark"] .dashboard-content .chart {
-    background: rgba(12,18,22,0.6);
-    border-color: rgba(255,255,255,0.04);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-    color: #d7e7e3;
-  }
+  .dark .emotion-detector .emotion-input { background: rgba(255,255,255,0.03) !important; color: #d7e7e3 !important; border-color: rgba(255,255,255,0.06) !important }
+  .dark .emotion-detector .emotion-btn { background: linear-gradient(90deg,#2aa77a,#57c69a) !important; color: #03110b !important }
+  .dark .card::before { background: rgba(0,0,0,0.6) !important }
 
-  [data-preferred-theme="dark"] .card p,
-  [data-preferred-theme="dark"] .journal-info p,
-  [data-preferred-theme="dark"] footer,
-  [data-preferred-theme="dark"] .muted { color: #9fbfb3 }
+  /* Slightly dim hero image for dark mode to improve contrast */
+  .dark .hero-right img { filter: brightness(0.78) !important; }
 
-  [data-preferred-theme="dark"] .btn-primary {
-    background: linear-gradient(90deg,#2aa77a,#57c69a);
-    color: #03110b;
-  }
-
-  [data-preferred-theme="dark"] .btn-secondary {
-    border: 2px solid rgba(86,196,153,0.18);
-    color: #a7e6c9;
-  }
-
-  [data-preferred-theme="dark"] footer { background: transparent; color: #9fbfb3 }
-
-  /* small adjustment for the toggle button when dark */
-  [data-preferred-theme="dark"] #theme-toggle { color: #fffb; }
+  /* Emotion detector styles */
+  .emotion-detector { display:flex; align-items:center; gap:0.6rem }
+  .emotion-input { padding:0.65rem; border-radius:8px; border:1px solid rgba(46,125,50,0.08); min-width:220px }
+  .emotion-btn { padding:0.55rem 0.95rem; border-radius:8px; background:linear-gradient(90deg,#2e7d32,#4fb07a); color:#fff; border:none; cursor:pointer }
+  .emotion-btn:hover { transform:translateY(-2px) }
+  #result { margin-top:8px; color:#2e7d32; font-weight:600 }
   </style>
 </body>
 </html>

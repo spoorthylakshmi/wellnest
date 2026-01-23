@@ -1,16 +1,19 @@
 from flask import Flask, request, jsonify
-import pandas as pd
+from flask_cors import CORS
 import joblib
 import os
 
 app = Flask(__name__)
+# Enable CORS for all routes (especially /predict)
+CORS(app, resources={r"/predict": {"origins": "*"}})
 
-# ✅ Paths
-model_dir = os.path.join(os.path.dirname(__file__), '../models')
+#  Paths
+BASE_DIR = os.path.dirname(__file__)
+model_dir = os.path.join(BASE_DIR, 'models')
 model_path = os.path.join(model_dir, 'emotion_model.pkl')
 vectorizer_path = os.path.join(model_dir, 'vectorizer.pkl')
 
-# ✅ Load trained model & vectorizer
+# Load trained model & vectorizer
 try:
     model = joblib.load(model_path)
     vectorizer = joblib.load(vectorizer_path)
@@ -24,14 +27,14 @@ except Exception as e:
 def home():
     return "🧠 Backend Connected Successfully! Emotion Detection API is running."
 
-# 📨 Route to collect user input
+#  Route to collect user input
 @app.route('/submit', methods=['POST'])
 def submit():
     data = request.get_json()
     print("User Input:", data)
     return jsonify({"status": "success", "message": "Data received!"})
 
-# 🔮 Route to predict emotion
+#  Route to predict emotion
 @app.route('/predict', methods=['POST'])
 def predict():
     if model is None or vectorizer is None:
@@ -63,4 +66,4 @@ def predict():
     })
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

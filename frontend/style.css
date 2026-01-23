@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
-/* 🌤️ Light Theme (Default) */
+/*  Light Theme (Default) */
 :root {
   --bg: #f7fbf8;
   --panel: #ffffff;
@@ -14,7 +14,7 @@
   --shadow: rgba(16,24,32,0.04);
 }
 
-/* 🌙 Dark Theme (brand-aligned, high-contrast headings & highlights) */
+/*  Dark Theme (brand-aligned, high-contrast headings & highlights) */
 [data-preferred-theme=dark],
 [data-preferred-theme=dark][data-editor-theme=design],
 :where([data-preferred-theme=dark] [data-editor-theme=design]) {
