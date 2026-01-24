@@ -268,3 +268,120 @@ button.button[style*="transparent"] {
   .theme-toggle { width: 84px; height: 44px; border-radius: 12px }
   .theme-toggle .label { display: inline-block }
 }
+
+/* Mood Tracker */
+/* Mood Tracker - Icons8 Emoji Icons (Theme Compatible) */
+.mood-container {
+  background: var(--panel);
+  padding: 25px;
+  border-radius: var(--radius);
+  box-shadow: 0 6px 20px var(--shadow);
+  margin: 20px auto;
+  max-width: 100%;
+  text-align: center;
+}
+
+.moods-grid {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+
+
+.mood-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px 12px;
+  border: 2px solid var(--accent-100);
+  border-radius: var(--radius);
+  background: var(--glass);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 90px;
+  flex: 1 1 90px;
+  max-width: 110px;
+  backdrop-filter: blur(10px);
+}
+
+.mood-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px var(--shadow);
+  border-color: var(--accent);
+}
+
+.mood-icon {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.mood-card:hover .mood-icon {
+  transform: scale(1.1);
+}
+
+.mood-caption {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-color);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.quote-display {
+  background: linear-gradient(135deg, var(--accent-100), var(--glass));
+  padding: 20px;
+  border-radius: var(--radius);
+  margin: 20px 0;
+  font-style: italic;
+  font-size: 16px;
+  color: var(--text-color);
+  min-height: 60px;
+  display: none;
+  backdrop-filter: blur(10px);
+}
+
+.quote-display.show {
+  display: block;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .moods-grid {
+    gap: 8px;
+    padding: 0 5px;
+  }
+  
+  .mood-card {
+    min-width: 75px;
+    padding: 12px 8px;
+  }
+  
+  .mood-icon {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  
+  .mood-caption {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .moods-grid {
+    gap: 6px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+  
+  .mood-card {
+    min-width: 68px;
+    padding: 10px 6px;
+  }
+}
