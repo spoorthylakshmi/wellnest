@@ -207,6 +207,22 @@ footer strong { color:#1b5e20 }
   </style>
 </head>
 <body>
+<!--deciding where the button should appear -->
+  <div id="notification-section" style="margin: 20px; text-align: center;">
+  <button id="enableNotificationsBtn">
+    Enable Wellness Notifications 🔔
+  </button>
+  <div id="notificationToggleSection" style="margin-top:10px; display:none;">
+ <label for="notificationToggle">
+  <input type="checkbox" id="notificationToggle" checked />
+  Notifications ON
+</label>
+
+
+</div>
+
+</div>
+
   
   <!-- Navbar -->
   <header class="navbar">
@@ -417,4 +433,11 @@ footer strong { color:#1b5e20 }
   [data-preferred-theme="dark"] #theme-toggle { color: #fffb; }
   </style>
 </body>
+
+<!-- script connecting to notifications -->
+<script src="js/notifications/notification-data.js"></script>
+<script src="js/notifications/notification-permission.js"></script>
+<script src="js/notifications/notification-scheduler.js"></script>
+<script src="js/notifications/notifications-main.js"></script>
+
 </html>
