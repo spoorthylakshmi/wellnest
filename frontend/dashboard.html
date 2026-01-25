@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Interactive Wellness Tracker</title>
+  <link rel="stylesheet" href="style.css">
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
@@ -106,7 +108,7 @@ nav a.active {
 
 </head>
 <body>
-
+ 
   <nav>
       <ul>
         <li><a href="index.html">Home</a></li>
@@ -116,7 +118,37 @@ nav a.active {
         <li><a href="profile.html">Profile</a></li>
       </ul>
     </nav>
-    
+     <!-- Mood Tracker Section -->
+<!-- Mood Tracker Section -->
+<div class="mood-container">
+  <h2>How is your mood today?</h2>
+  <div class="moods-grid">
+    <div class="mood-card" data-mood="angry">
+      <img src="https://img.icons8.com/?size=80&id=FSkKcznHYiGn&format=png" alt="Angry" class="mood-icon">
+      <p class="mood-caption">Angry</p>
+    </div>
+    <div class="mood-card" data-mood="sad">
+      <img src="https://img.icons8.com/?size=80&id=vMvJpi9kUlei&format=png" alt="Sad" class="mood-icon">
+      <p class="mood-caption">Sad</p>
+    </div>
+    <div class="mood-card" data-mood="neutral">
+      <img src="https://img.icons8.com/?size=80&id=2s4CNgtV9TZg&format=png" alt="Neutral" class="mood-icon">
+      <p class="mood-caption">Neutral</p>
+    </div>
+    <div class="mood-card" data-mood="excited">
+      <img src="https://img.icons8.com/?size=80&id=okvaUN6QTZ1H&format=png" alt="Excited" class="mood-icon">
+      <p class="mood-caption">Excited</p>
+    </div>
+    <div class="mood-card" data-mood="happy">
+      <img src="https://img.icons8.com/?size=80&id=bfzB1emH0tgY&format=png" alt="Happy" class="mood-icon">
+      <p class="mood-caption">Happy</p>
+    </div>
+    </div>  
+  <div class="quote-display" id="quoteDisplay"></div>
+  <p id="mood-message"></p>
+</div>
+
+
 
   <h1>🌿 Interactive Wellness Tracker</h1>
 
@@ -291,6 +323,8 @@ nav a.active {
     updateToggle();
   })();
 </script>
+<script src="script.js"></script>
+
 
 </body>
 </html>
