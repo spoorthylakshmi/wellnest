@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Wellnest Design System - Calming pastel palette */
+
+@layer base {
+  :root {
+    /* Soft pastel backgrounds */
+    --background: 150 30% 98%;
+    --foreground: 220 25% 20%;
+
+    /* Card styling */
+    --card: 0 0% 100%;
+    --card-foreground: 220 25% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 25% 20%;
+
+    /* Primary - Soft sage green */
+    --primary: 150 40% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secondary - Sky blue */
+    --secondary: 200 60% 90%;
+    --secondary-foreground: 200 50% 30%;
+
+    /* Muted - Soft lavender */
+    --muted: 270 30% 95%;
+    --muted-foreground: 220 15% 45%;
+
+    /* Accent - Lavender */
+    --accent: 270 50% 85%;
+    --accent-foreground: 270 40% 30%;
+
+    /* Wellness specific colors */
+    --wellness-green: 150 45% 55%;
+    --wellness-blue: 200 70% 70%;
+    --wellness-lavender: 270 50% 80%;
+    --wellness-peach: 20 80% 90%;
+    --wellness-mint: 160 50% 85%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 200 20% 88%;
+    --input: 200 20% 88%;
+    --ring: 150 40% 50%;
+
+    --radius: 1rem;
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 220 25% 10%;
+    --foreground: 150 20% 95%;
+
+    --card: 220 25% 14%;
+    --card-foreground: 150 20% 95%;
+
+    --popover: 220 25% 14%;
+    --popover-foreground: 150 20% 95%;
+
+    --primary: 150 40% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 200 40% 20%;
+    --secondary-foreground: 200 60% 90%;
+
+    --muted: 220 20% 18%;
+    --muted-foreground: 220 15% 65%;
+
+    --accent: 270 30% 25%;
+    --accent-foreground: 270 50% 85%;
+
+    --wellness-green: 150 45% 40%;
+    --wellness-blue: 200 60% 50%;
+    --wellness-lavender: 270 40% 60%;
+    --wellness-peach: 20 60% 70%;
+    --wellness-mint: 160 40% 65%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 20% 22%;
+    --input: 220 20% 22%;
+    --ring: 150 40% 45%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  .wellness-gradient {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--wellness-mint)) 0%,
+      hsl(var(--wellness-blue)) 50%,
+      hsl(var(--wellness-lavender)) 100%
+    );
+  }
+
+  .wellness-card-hover {
+    @apply transition-all duration-300 ease-out hover:shadow-lg hover:-translate-y-1;
+  }
+
+  .wellness-glow {
+    box-shadow: 0 0 40px -10px hsl(var(--primary) / 0.3);
+  }
+}
