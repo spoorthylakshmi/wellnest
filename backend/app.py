@@ -3,14 +3,16 @@ from flask_cors import CORS
 import joblib
 import os
 
-# 🔹 MongoDB + Streak imports (NEW)
+# 🔹 MongoDB + Streak imports
 from bson import ObjectId
 from database.db import users
 from database.streak import update_visit_streak
 
-
-# 🔹 Chatbot import (EXISTING)
+# 🔹 Chatbot import
 from chatbot.engine import get_bot_reply
+
+# 🔹 Wellness videos import (NEW)
+from videos import videos
 
 app = Flask(__name__)
 
@@ -18,7 +20,9 @@ app = Flask(__name__)
 CORS(app, resources={
     r"/predict": {"origins": "*"},
     r"/api/chatbot": {"origins": "*"},
-    r"/api/visit/*": {"origins": "*"}   # NEW
+    r"/api/visit/*": {"origins": "*"},
+    r"/voice-text": {"origins": "*"},
+    r"/api/videos/*": {"origins": "*"}
 })
 
 # 🔹 Paths
@@ -33,37 +37,56 @@ try:
     vectorizer = joblib.load(vectorizer_path)
     print("✅ Model and vectorizer loaded successfully!")
 except Exception as e:
-    print("⚠️ Model not loaded yet. Error:", e)
+    print("⚠️ Model not loaded yet:", e)
     model = None
     vectorizer = None
 
 
-# 🔹 Home Route
+# -------------------------------
+# Home Route
+# -------------------------------
 @app.route('/')
 def home():
-    return "🧠 Backend Connected Successfully! Emotion Detection & Chatbot API is running."
+    return "WellNest backend is running successfully!"
 
 
-# 🔹 Route to collect user input
-@app.route('/submit', methods=['POST'])
-def submit():
+# -------------------------------
+# Voice-to-Text endpoint (NEW)
+# -------------------------------
+@app.route("/voice-text", methods=["POST"])
+def voice_text():
     data = request.get_json()
-    print("User Input:", data)
-    return jsonify({"status": "success", "message": "Data received!"})
+
+    if not data or "text" not in data:
+        return jsonify({
+            "status": "error",
+            "message": "No text received"
+        }), 400
+
+    text = data["text"]
+
+    print("📝 Voice converted text received:")
+    print(text)
+
+    return jsonify({
+        "status": "success",
+        "message": "Text received by backend"
+    })
 
 
-# 🔹 Emotion Prediction Route
+# -------------------------------
+# Emotion Prediction
+# -------------------------------
 @app.route('/predict', methods=['POST'])
 def predict():
     if model is None or vectorizer is None:
-        return jsonify({'error': 'Model not loaded. Train and save it first!'}), 500
+        return jsonify({'error': 'Model not loaded'}), 500
 
     data = request.get_json()
     if not data or 'text' not in data:
-        return jsonify({'error': 'Please provide text field'}), 400
+        return jsonify({'error': 'Text is required'}), 400
 
-    text = data['text']
-    X = vectorizer.transform([text])
+    X = vectorizer.transform([data['text']])
     prediction = model.predict(X)[0]
 
     label_map = {
@@ -75,58 +98,67 @@ def predict():
         5: "surprise"
     }
 
-    emotion = label_map.get(int(prediction), "unknown")
-
     return jsonify({
-        'text': text,
-        'predicted_label': int(prediction),
-        'emotion': emotion
+        "emotion": label_map.get(int(prediction), "unknown")
     })
 
 
-# 🤖 Rule-Based Chatbot Route
+# -------------------------------
+# Chatbot API
+# -------------------------------
 @app.route('/api/chatbot', methods=['POST'])
 def chatbot():
     data = request.get_json()
-
     if not data or 'message' not in data:
-        return jsonify({'error': 'Message is required'}), 400
+        return jsonify({'error': 'Message required'}), 400
 
-    user_message = data['message']
-    reply = get_bot_reply(user_message)
+    reply = get_bot_reply(data['message'])
+    return jsonify({"reply": reply})
 
+
+# -------------------------------
+# Wellness Videos (NEW)
+# -------------------------------
+@app.route("/api/videos", methods=["GET"])
+def get_videos():
     return jsonify({
-        "reply": reply,
-        "success": True
+        "status": "success",
+        "data": videos
     })
 
 
-# 🔥 WEBSITE VISIT STREAK ROUTE (NEW – ADDED SAFELY)
+@app.route("/api/videos/<category>", methods=["GET"])
+def get_videos_by_category(category):
+    filtered = [v for v in videos if v["category"] == category]
+    return jsonify({
+        "category": category,
+        "data": filtered
+    })
+
+
+# -------------------------------
+# Website Visit Streak
+# -------------------------------
 @app.route('/api/visit/<user_id>', methods=['POST'])
 def website_visit(user_id):
     try:
         user = users.find_one({"_id": ObjectId(user_id)})
-
         if not user:
             return jsonify({"error": "User not found"}), 404
 
         updated = update_visit_streak(user)
-
-        users.update_one(
-            {"_id": ObjectId(user_id)},
-            {"$set": updated}
-        )
+        users.update_one({"_id": ObjectId(user_id)}, {"$set": updated})
 
         return jsonify({
-            "message": "Visit recorded",
             "streak": updated["streak"],
             "badges": updated["badges"]
         })
-
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
-# 🔹 Run Server
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+# -------------------------------
+# Run Server
+# -------------------------------
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
