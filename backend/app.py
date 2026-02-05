@@ -3,22 +3,21 @@ from flask_cors import CORS
 import joblib
 import os
 
-# 🔹 MongoDB + Streak imports (NEW)
+# 🔹 MongoDB + Streak imports
 from bson import ObjectId
 from database.db import users
 from database.streak import update_visit_streak
 
-
-# 🔹 Chatbot import (EXISTING)
+# 🔹 Chatbot import
 from chatbot.engine import get_bot_reply
 
 app = Flask(__name__)
 
-# Enable CORS
+# 🔹 Enable CORS
 CORS(app, resources={
     r"/predict": {"origins": "*"},
     r"/api/chatbot": {"origins": "*"},
-    r"/api/visit/*": {"origins": "*"}   # NEW
+    r"/api/visit/*": {"origins": "*"}
 })
 
 # 🔹 Paths
@@ -52,7 +51,7 @@ def submit():
     return jsonify({"status": "success", "message": "Data received!"})
 
 
-# 🔹 Emotion Prediction Route
+# 🔹 Emotion Prediction Route (UPDATED WITH SOUND)
 @app.route('/predict', methods=['POST'])
 def predict():
     if model is None or vectorizer is None:
@@ -77,10 +76,24 @@ def predict():
 
     emotion = label_map.get(int(prediction), "unknown")
 
+    # 🔊 Emotion → Sound mapping
+    sound_map = {
+        "sadness": "rain.mp3",
+        "anger": "om.mp3",
+        "fear": "jungle.mp3",
+        "joy": "happy.mp3",
+        "love": "calm.mp3",
+        "surprise": "waves.mp3",
+        "stress": "bowls.mp3"
+    }
+
+    sound = sound_map.get(emotion, "calm.mp3")
+
     return jsonify({
-        'text': text,
-        'predicted_label': int(prediction),
-        'emotion': emotion
+        "text": text,
+        "predicted_label": int(prediction),
+        "emotion": emotion,
+        "sound": sound
     })
 
 
@@ -101,7 +114,7 @@ def chatbot():
     })
 
 
-# 🔥 WEBSITE VISIT STREAK ROUTE (NEW – ADDED SAFELY)
+# 🔥 WEBSITE VISIT STREAK ROUTE
 @app.route('/api/visit/<user_id>', methods=['POST'])
 def website_visit(user_id):
     try:
@@ -130,5 +143,3 @@ def website_visit(user_id):
 # 🔹 Run Server
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
-
-    
