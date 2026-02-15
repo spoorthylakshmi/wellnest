@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Sparkles, Music, Brain, Activity, Heart, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -5,9 +6,17 @@ import { Card, CardContent } from "@/components/ui/card";
 
 /**
  * Landing Page / Home
- * Hero section with tagline and feature highlights
+ * Hero section with tagline, greeting, and feature highlights
  */
 const Index = () => {
+  const [userName, setUserName] = useState<string | null>(null);
+
+  // Read username after login
+  useEffect(() => {
+    const name = localStorage.getItem("user_name");
+    setUserName(name);
+  }, []);
+
   // Feature cards data
   const features = [
     {
@@ -19,8 +28,8 @@ const Index = () => {
     },
     {
       icon: Brain,
-      title: "AI Insights",
-      description: "Get personalized wellness recommendations powered by AI",
+      title: " Insights",
+      description: "Get personalized wellness recommendations ",
       color: "bg-wellness-lavender",
       link: "/ai-insights",
     },
@@ -55,13 +64,23 @@ const Index = () => {
       <section className="relative overflow-hidden">
         {/* Background gradient */}
         <div className="absolute inset-0 wellness-gradient opacity-30" />
-        
+
         <div className="container relative py-20 md:py-32">
           <div className="max-w-3xl mx-auto text-center animate-fade-in">
+
+            {/* 👋 Greeting */}
+            {userName && (
+              <p className="text-lg font-medium text-foreground mb-4">
+                Hello, {userName}! Welcome back to your wellness journey.
+              </p>
+            )}
+
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary mb-6">
               <Sparkles className="h-4 w-4" />
-              <span className="text-sm font-medium">Your wellness journey starts here</span>
+              <span className="text-sm font-medium">
+                Your wellness journey starts here
+              </span>
             </div>
 
             {/* Main heading */}
@@ -73,9 +92,9 @@ const Index = () => {
 
             {/* Description */}
             <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-              Wellnest brings together mental and physical wellness in one calming space. 
-              Discover sound therapy, track your progress, and get personalized insights 
-              to feel your best every day.
+              Wellnest brings together mental and physical wellness in one calming
+              space. Discover sound therapy, track your progress, and get
+              personalized insights to feel your best every day.
             </p>
 
             {/* CTA Buttons */}
@@ -86,13 +105,23 @@ const Index = () => {
                   Explore Sound Therapy
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="rounded-full px-8">
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="rounded-full px-8"
+              >
                 <Link to="/ai-insights">
                   <Sparkles className="mr-2 h-5 w-5" />
-                  View AI Insights
+                  View  Insights
                 </Link>
               </Button>
-              <Button asChild variant="secondary" size="lg" className="rounded-full px-8">
+              <Button
+                asChild
+                variant="secondary"
+                size="lg"
+                className="rounded-full px-8"
+              >
                 <Link to="/tracker">
                   <Activity className="mr-2 h-5 w-5" />
                   Track Wellness
@@ -102,9 +131,12 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Decorative floating elements */}
+        {/* Decorative elements */}
         <div className="absolute top-20 left-10 w-20 h-20 rounded-full bg-wellness-mint/30 blur-2xl animate-float" />
-        <div className="absolute bottom-20 right-10 w-32 h-32 rounded-full bg-wellness-lavender/30 blur-2xl animate-float" style={{ animationDelay: "1s" }} />
+        <div
+          className="absolute bottom-20 right-10 w-32 h-32 rounded-full bg-wellness-lavender/30 blur-2xl animate-float"
+          style={{ animationDelay: "1s" }}
+        />
       </section>
 
       {/* Features Section */}
@@ -115,7 +147,8 @@ const Index = () => {
               Everything You Need to Thrive
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Our comprehensive wellness tools help you build healthy habits and find inner peace
+              Our comprehensive wellness tools help you build healthy habits and
+              find inner peace
             </p>
           </div>
 
@@ -124,7 +157,9 @@ const Index = () => {
               <Link key={index} to={feature.link}>
                 <Card className="h-full wellness-card-hover cursor-pointer border-0 shadow-md">
                   <CardContent className="p-8 text-center">
-                    <div className={`${feature.color} w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6`}>
+                    <div
+                      className={`${feature.color} w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6`}
+                    >
                       <feature.icon className="h-8 w-8 text-foreground" />
                     </div>
                     <h3 className="text-xl font-semibold text-foreground mb-3">
@@ -176,12 +211,11 @@ const Index = () => {
               Start Your Wellness Journey Today
             </h2>
             <p className="text-muted-foreground mb-8">
-              Join thousands of people who have found peace and balance with Wellnest
+              Join thousands of people who have found peace and balance with
+              Wellnest
             </p>
             <Button asChild size="lg" className="rounded-full px-10">
-              <Link to="/tracker">
-                Get Started
-              </Link>
+              <Link to="/tracker">Get Started</Link>
             </Button>
           </div>
         </div>

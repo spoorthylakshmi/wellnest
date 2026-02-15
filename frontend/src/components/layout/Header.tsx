@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+
 import { Menu, X, Leaf, Moon, Sun, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
@@ -13,6 +14,16 @@ const Header = () => {
   const location = useLocation();
   const { theme, setTheme } = useTheme();
 
+  const navigate = useNavigate();
+const userId = localStorage.getItem("user_id");
+
+const handleLogout = () => {
+  localStorage.removeItem("user_id");
+  localStorage.removeItem("user_name");
+  navigate("/auth");
+};
+
+
   // Toggle between light and dark mode
   const toggleTheme = () => {
     setTheme(theme === "dark" ? "light" : "dark");
@@ -23,7 +34,8 @@ const Header = () => {
     { path: "/", label: "Home" },
     { path: "/mental-health", label: "Mental Health" },
     { path: "/sound-therapy", label: "Sound Therapy" },
-    { path: "/ai-insights", label: "AI Insights" },
+    { path: "/guided-breathing", label: "Guided Breathing" },
+    { path: "/ai-insights", label: " Insights" },
     { path: "/physical-health", label: "Physical Health" },
     { path: "/tracker", label: "Tracker" },
   ];
@@ -77,17 +89,31 @@ const Header = () => {
           </Button>
 
           {/* Login Button */}
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-            className="hidden sm:flex gap-2 rounded-full"
-          >
-            <Link to="/auth">
-              <User className="h-4 w-4" />
-              Login
-            </Link>
-          </Button>
+{userId ? (
+  <Button
+    variant="outline"
+    size="sm"
+    onClick={handleLogout}
+    className="hidden sm:flex gap-2 rounded-full"
+  >
+    <User className="h-4 w-4" />
+    Logout
+  </Button>
+) : (
+  <Button
+    variant="outline"
+    size="sm"
+    asChild
+    className="hidden sm:flex gap-2 rounded-full"
+  >
+    <Link to="/auth">
+      <User className="h-4 w-4" />
+      Login
+    </Link>
+  </Button>
+)}
+
+
 
           {/* Mobile Menu Button */}
           <Button
@@ -120,14 +146,28 @@ const Header = () => {
               </Link>
             ))}
             {/* Mobile Login Link */}
-            <Link
-              to="/auth"
-              onClick={() => setIsMenuOpen(false)}
-              className="px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-2"
-            >
-              <User className="h-4 w-4" />
-              Login / Sign Up
-            </Link>
+           {userId ? (
+  <button
+    onClick={() => {
+      handleLogout();
+      setIsMenuOpen(false);
+    }}
+    className="px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-2 text-left"
+  >
+    <User className="h-4 w-4" />
+    Logout
+  </button>
+) : (
+  <Link
+    to="/auth"
+    onClick={() => setIsMenuOpen(false)}
+    className="px-4 py-3 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted flex items-center gap-2"
+  >
+    <User className="h-4 w-4" />
+    Login / Sign Up
+  </Link>
+)}
+
           </div>
         </nav>
       )}

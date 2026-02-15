@@ -19,6 +19,8 @@ interface SoundCard {
   posterColor: string;
   // Placeholder audio URLs - replace with actual audio files
   audioUrl: string;
+  /** optional public image path (e.g. /images/rain.jpeg) */
+  imageUrl?: string;
 }
 
 const SoundTherapy = () => {
@@ -29,70 +31,81 @@ const SoundTherapy = () => {
 
   // Sound cards configuration with placeholder audio
   const sounds: SoundCard[] = [
-    {
-      id: "rain",
-      title: "Rain",
-      description: "Gentle rainfall to calm your mind",
-      icon: CloudRain,
-      color: "from-wellness-blue to-blue-300",
-      posterColor: "bg-gradient-to-br from-slate-700 via-blue-800 to-slate-900",
-      audioUrl: "https://www.soundjay.com/nature/rain-01.mp3",
-    },
-    {
-      id: "forest",
-      title: "Forest",
-      description: "Peaceful forest ambiance with birds",
-      icon: Trees,
-      color: "from-wellness-green to-green-300",
-      posterColor: "bg-gradient-to-br from-green-700 via-emerald-800 to-green-900",
-      audioUrl: "https://www.soundjay.com/nature/forest-01.mp3",
-    },
-    {
-      id: "ocean",
-      title: "Ocean",
-      description: "Soothing ocean waves on the shore",
-      icon: Waves,
-      color: "from-cyan-400 to-blue-400",
-      posterColor: "bg-gradient-to-br from-cyan-600 via-blue-700 to-indigo-800",
-      audioUrl: "https://www.soundjay.com/nature/ocean-wave-1.mp3",
-    },
-    {
-      id: "flute",
-      title: "Flute",
-      description: "Calming flute melodies for meditation",
-      icon: Music,
-      color: "from-amber-400 to-orange-300",
-      posterColor: "bg-gradient-to-br from-amber-600 via-orange-700 to-red-800",
-      audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-    },
-    {
-      id: "om",
-      title: "Om Sound",
-      description: "Sacred Om chanting for deep relaxation",
-      icon: Music,
-      color: "from-wellness-lavender to-purple-300",
-      posterColor: "bg-gradient-to-br from-purple-700 via-violet-800 to-purple-900",
-      audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-    },
-    {
-      id: "happy",
-      title: "Happy Music",
-      description: "Uplifting melodies to boost your mood",
-      icon: Smile,
-      color: "from-yellow-400 to-amber-300",
-      posterColor: "bg-gradient-to-br from-yellow-500 via-amber-600 to-orange-700",
-      audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-    },
-    {
-      id: "night",
-      title: "Night Ambience",
-      description: "Crickets and gentle night sounds",
-      icon: Moon,
-      color: "from-indigo-400 to-purple-400",
-      posterColor: "bg-gradient-to-br from-indigo-800 via-purple-900 to-slate-900",
-      audioUrl: "https://www.soundjay.com/nature/crickets-1.mp3",
-    },
-  ];
+  {
+    id: "rain",
+    title: "Rain",
+    description: "Gentle rainfall to calm your mind",
+    icon: CloudRain,
+    color: "from-wellness-blue to-blue-300",
+    posterColor: "bg-gradient-to-br from-slate-700 via-blue-800 to-slate-900",
+    audioUrl: "/sounds/rain.mp3",
+    imageUrl: "/images/rain.jpeg",
+  },
+  {
+    id: "forest",
+    title: "Jungle",
+    description: "Natural jungle ambience to relax your senses",
+    icon: Trees,
+    color: "from-wellness-green to-green-300",
+    posterColor: "bg-gradient-to-br from-green-700 via-emerald-800 to-green-900",
+    audioUrl: "/sounds/jungle.mp3",
+    imageUrl: "/images/jungle.jpeg",
+  },
+  {
+    id: "ocean",
+    title: "Ocean Waves",
+    description: "Soothing ocean waves on the shore",
+    icon: Waves,
+    color: "from-cyan-400 to-blue-400",
+    posterColor: "bg-gradient-to-br from-cyan-600 via-blue-700 to-indigo-800",
+    audioUrl: "/sounds/waves.mp3",
+    imageUrl: "/images/ocean.jpeg",
+  },
+  {
+    id: "flute",
+    title: "Flute",
+    description: "Calming flute melodies for meditation",
+    icon: Music,
+    color: "from-amber-400 to-orange-300",
+    posterColor: "bg-gradient-to-br from-amber-600 via-orange-700 to-red-800",
+    audioUrl: "/sounds/flute.mp3",
+    imageUrl: "/images/krishna.jpeg",
+
+  },
+  {
+    id: "om",
+    title: "Om Chanting",
+    description: "Sacred Om sound for deep relaxation",
+    icon: Music,
+    color: "from-wellness-lavender to-purple-300",
+    posterColor: "bg-gradient-to-br from-purple-700 via-violet-800 to-purple-900",
+    audioUrl: "/sounds/om.mp3",
+    imageUrl: "/images/om.jpeg",
+
+
+  },
+  {
+    id: "happy",
+    title: "Happy Music",
+    description: "Uplifting music to improve your mood",
+    icon: Smile,
+    color: "from-yellow-400 to-amber-300",
+    posterColor: "bg-gradient-to-br from-yellow-500 via-amber-600 to-orange-700",
+    audioUrl: "/sounds/happy.mp3",
+    imageUrl: "/images/happy.jpeg",
+  },
+  {
+    id: "bowls",
+    title: "Singing Bowls",
+    description: "Tibetan singing bowls for mindfulness",
+    icon: Music,
+    color: "from-indigo-400 to-purple-400",
+    posterColor: "bg-gradient-to-br from-indigo-800 via-purple-900 to-slate-900",
+    audioUrl: "/sounds/bowls.mp3",
+    imageUrl: "/images/bowl.jpeg",
+  },
+];
+
 
   // Handle play/pause for a sound
   const togglePlay = (sound: SoundCard) => {
@@ -211,10 +224,28 @@ const SoundTherapy = () => {
                 onClick={() => togglePlay(sound)}
               >
                 {/* Poster/Cover Image */}
-                <div className={`h-40 ${sound.posterColor} relative flex items-center justify-center`}>
-                  <Icon className={`h-16 w-16 text-white/80 ${isPlaying ? "animate-breathe" : ""}`} />
+                <div className={`h-40 ${sound.posterColor} relative flex items-center justify-center overflow-hidden`}>
+                  {/* background image (served from public/) — keep icon on top for visual identity */}
+                  {sound.imageUrl && (
+                    <img
+                      src={sound.imageUrl}
+                      alt={`${sound.title} poster`}
+                      loading="lazy"
+                      className="absolute inset-0 w-full h-full object-cover opacity-70"
+                      onError={(e) => {
+                        // fallback to a bundled image if the requested file 404s
+                        (e.currentTarget as HTMLImageElement).src = '/images/rain.jpeg';
+                      }}
+                    />
+                  )}
+
+                  {/* subtle dark overlay to keep icon readable */}
+                  <div className="absolute inset-0 bg-black/10" />
+
+                  <Icon className={`relative z-10 h-16 w-16 text-white/90 ${isPlaying ? "animate-breathe" : ""}`} />
+
                   {isPlaying && (
-                    <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black/10 flex items-center justify-center z-20">
                       <div className="flex gap-1">
                         {[1, 2, 3, 4].map((i) => (
                           <div
@@ -291,9 +322,7 @@ const SoundTherapy = () => {
         )}
 
         {/* Note about audio */}
-        <p className="text-center text-sm text-muted-foreground mt-12">
-          Note: Using placeholder audio files. Replace with actual nature sounds for production.
-        </p>
+      
       </div>
     </div>
   );

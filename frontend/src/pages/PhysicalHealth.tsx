@@ -1,22 +1,94 @@
+import { useEffect, useState } from "react";
 import { Activity, Dumbbell, Apple, Timer, Droplets, Moon } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 
 /**
  * Physical Health Page
- * Exercise tips, nutrition guides, and body wellness information
- * All data is static/mock for demo purposes
+ * Fetches and displays user physical health data from MongoDB
  */
 const PhysicalHealth = () => {
-  // Daily stats (mock data) - removed Steps card
+  const [healthData, setHealthData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const userId = "6989633b434935eb2dd45f4d";
+
+  useEffect(() => {
+    const fetchPhysicalHealth = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/physical-health/${userId}`
+        );
+        const data = await res.json();
+        setHealthData(data);
+      } catch (error) {
+        console.error("Error fetching physical health data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (userId) {
+      fetchPhysicalHealth();
+    }
+  }, [userId]);
+
+  /* -------------------- LOADING & EMPTY STATES -------------------- */
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">
+          Loading physical health data...
+        </p>
+      </div>
+    );
+  }
+
+  if (!healthData || healthData.message) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">
+          No physical health data available
+        </p>
+      </div>
+    );
+  }
+
+  /* -------------------- DAILY STATS (FROM MONGODB) -------------------- */
+
   const dailyStats = [
-    { icon: Droplets, label: "Water", value: "6", target: "8 glasses", progress: 75 },
-    { icon: Timer, label: "Exercise", value: "35", target: "45 min", progress: 78 },
-    { icon: Moon, label: "Sleep", value: "7.2", target: "8 hours", progress: 90 },
+    {
+      icon: Droplets,
+      label: "Water",
+      value: healthData.water_glasses,
+      target: "8 glasses",
+      progress: Math.min((healthData.water_glasses / 8) * 100, 100),
+    },
+    {
+      icon: Timer,
+      label: "Exercise",
+      value: healthData.exercise_minutes,
+      target: "45 min",
+      progress: Math.min((healthData.exercise_minutes / 45) * 100, 100),
+    },
+    {
+      icon: Moon,
+      label: "Sleep",
+      value: healthData.sleep_hours,
+      target: "8 hours",
+      progress: Math.min((healthData.sleep_hours / 8) * 100, 100),
+    },
   ];
 
-  // Exercise categories
+  /* -------------------- STATIC CONTENT -------------------- */
+
   const exercises = [
     {
       title: "Morning Yoga",
@@ -48,7 +120,6 @@ const PhysicalHealth = () => {
     },
   ];
 
-  // Nutrition tips
   const nutritionTips = [
     {
       icon: Apple,
@@ -67,22 +138,21 @@ const PhysicalHealth = () => {
     },
   ];
 
+  /* -------------------- UI -------------------- */
 
   return (
     <div className="min-h-screen py-12">
       <div className="container">
         {/* Header */}
         <div className="text-center mb-12 animate-fade-in">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-wellness-mint/30 text-foreground mb-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-wellness-mint/30 mb-4">
             <Activity className="h-4 w-4" />
             <span className="text-sm font-medium">Physical Wellness</span>
           </div>
-          <h1 className="text-4xl font-bold text-foreground mb-4">
-            Move Your Body
-          </h1>
+          <h1 className="text-4xl font-bold mb-4">Move Your Body</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Discover exercises, nutrition tips, and healthy habits to keep your body 
-            feeling strong and energized.
+            Discover exercises, nutrition tips, and healthy habits to keep your
+            body feeling strong and energized.
           </p>
         </div>
 
@@ -96,14 +166,18 @@ const PhysicalHealth = () => {
                     <stat.icon className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground">of {stat.target}</p>
+                    <p className="text-2xl font-bold">{stat.value}</p>
+                    <p className="text-xs text-muted-foreground">
+                      of {stat.target}
+                    </p>
                   </div>
                 </div>
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">{stat.label}</span>
-                    <span className="text-foreground font-medium">{stat.progress}%</span>
+                    <span className="font-medium">
+                      {Math.round(stat.progress)}%
+                    </span>
                   </div>
                   <Progress value={stat.progress} className="h-2" />
                 </div>
@@ -114,7 +188,7 @@ const PhysicalHealth = () => {
 
         {/* Exercise Section */}
         <div>
-          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
             <Dumbbell className="h-6 w-6 text-primary" />
             Recommended Exercises
           </h2>
@@ -125,10 +199,14 @@ const PhysicalHealth = () => {
                 className="border-0 shadow-md wellness-card-hover cursor-pointer"
               >
                 <CardContent className="pt-6">
-                  <div className={`${exercise.color} w-full h-2 rounded-full mb-4`} />
-                  <h3 className="font-semibold text-foreground mb-2">{exercise.title}</h3>
-                  <p className="text-sm text-muted-foreground mb-4">{exercise.description}</p>
-                  <div className="flex items-center gap-2">
+                  <div
+                    className={`${exercise.color} w-full h-2 rounded-full mb-4`}
+                  />
+                  <h3 className="font-semibold mb-2">{exercise.title}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {exercise.description}
+                  </p>
+                  <div className="flex gap-2">
                     <Badge variant="secondary">{exercise.duration}</Badge>
                     <Badge variant="outline">{exercise.difficulty}</Badge>
                   </div>
@@ -140,7 +218,7 @@ const PhysicalHealth = () => {
 
         {/* Nutrition Section */}
         <div className="mt-12">
-          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
+          <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
             <Apple className="h-6 w-6 text-primary" />
             Nutrition Tips
           </h2>
@@ -164,18 +242,14 @@ const PhysicalHealth = () => {
           </div>
         </div>
 
-        {/* Motivational Section */}
+        {/* Motivation */}
         <div className="mt-12 text-center">
           <Card className="border-0 shadow-lg wellness-gradient p-8">
-            <div className="max-w-2xl mx-auto">
-              <h3 className="text-2xl font-bold text-foreground mb-4">
-                Every Step Counts! 🌟
-              </h3>
-              <p className="text-foreground/80">
-                Remember, physical wellness is a journey, not a destination. 
-                Celebrate your small victories and keep moving forward!
-              </p>
-            </div>
+            <h3 className="text-2xl font-bold mb-4">Every Step Counts! 🌟</h3>
+            <p className="text-foreground/80">
+              Physical wellness is a journey. Celebrate small wins and keep
+              moving forward!
+            </p>
           </Card>
         </div>
       </div>

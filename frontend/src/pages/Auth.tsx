@@ -32,53 +32,64 @@ const Auth = () => {
     });
   };
 
-  // Mock authentication handler
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  e.preventDefault();
+  setIsLoading(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+  try {
+    const endpoint = isLogin
+      ? "http://127.0.0.1:5000/api/login"
+      : "http://127.0.0.1:5000/api/signup";
 
-    // Mock validation
-    if (!formData.email || !formData.password) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-      return;
+    const payload = isLogin
+      ? {
+          email: formData.email,
+          password: formData.password,
+        }
+      : {
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        };
+
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Authentication failed");
     }
 
-    if (!isLogin && !formData.name) {
-      toast({
-        title: "Error",
-        description: "Please enter your name.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-      return;
-    }
+    // ✅ Store real login info
+    localStorage.setItem("user_id", data.user_id);
+    localStorage.setItem("user_name", data.name);
 
-    // Success - mock login/signup
     toast({
       title: isLogin ? "Welcome back!" : "Account created!",
-      description: isLogin 
+      description: isLogin
         ? "You have successfully logged in."
         : "Your account has been created successfully.",
     });
 
-    // Store mock user in localStorage (demo purposes)
-    localStorage.setItem("wellnest_user", JSON.stringify({
-      name: formData.name || "Demo User",
-      email: formData.email,
-      isLoggedIn: true,
-    }));
-
-    setIsLoading(false);
     navigate("/");
-  };
+
+  } catch (error: any) {
+    toast({
+      title: "Authentication Error",
+      description: error.message,
+      variant: "destructive",
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4">
@@ -209,13 +220,7 @@ const Auth = () => {
           </div>
 
           {/* Demo notice */}
-          <div className="mt-6 p-4 bg-muted/50 rounded-xl text-center">
-            <p className="text-xs text-muted-foreground">
-              🔒 This is a demo authentication UI. No real data is stored.
-              <br />
-              Backend integration coming soon.
-            </p>
-          </div>
+          
         </CardContent>
       </Card>
     </div>

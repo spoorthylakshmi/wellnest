@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Play, Pause, RotateCcw, Wind } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 type BreathingPhase = "idle" | "inhale" | "hold" | "exhale";
 
 const GuidedBreathing = () => {
+  const navigate = useNavigate();
   const [phase, setPhase] = useState<BreathingPhase>("idle");
   const [isActive, setIsActive] = useState(false);
   const [cycleCount, setCycleCount] = useState(0);
@@ -131,21 +132,23 @@ const GuidedBreathing = () => {
   return (
     <div className="min-h-screen py-8 flex flex-col">
       {/* Background decoration */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-wellness-mint/20 rounded-full blur-3xl animate-float" />
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-wellness-lavender/20 rounded-full blur-3xl animate-float" style={{ animationDelay: "2s" }} />
       </div>
 
       <div className="container flex-1 flex flex-col">
         {/* Header with back button */}
-        <div className="mb-8">
-          <Button variant="ghost" asChild className="gap-2">
-            <Link to="/mental-health">
-              <ArrowLeft className="h-4 w-4" />
-              Back to Mental Health
-            </Link>
+        {/* <div className="mb-8">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate("/mental-health")}
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Mental Health
           </Button>
-        </div>
+        </div> */}
 
         {/* Main content */}
         <div className="flex-1 flex flex-col items-center justify-center -mt-16">

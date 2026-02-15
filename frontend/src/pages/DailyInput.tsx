@@ -1,14 +1,12 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
-import { 
-  ArrowLeft, Moon, Droplets, Dumbbell, BookOpen, 
+import {
+  ArrowLeft, Moon, Droplets, Dumbbell, BookOpen,
   Mic, MicOff, Smile, Meh, Frown, Angry, Heart, Sparkles,
   Save, Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
@@ -20,9 +18,9 @@ import { useToast } from "@/hooks/use-toast";
 
 type MoodType = "happy" | "calm" | "neutral" | "sad" | "angry" | null;
 
-const moodConfig: Record<Exclude<MoodType, null>, { 
-  icon: typeof Smile; 
-  label: string; 
+const moodConfig: Record<Exclude<MoodType, null>, {
+  icon: typeof Smile;
+  label: string;
   color: string;
   quote: string;
 }> = {
@@ -60,7 +58,6 @@ const moodConfig: Record<Exclude<MoodType, null>, {
 
 const DailyInput = () => {
   const { toast } = useToast();
-  const [isSaved, setIsSaved] = useState(false);
 
   // Form state
   const [sleepHours, setSleepHours] = useState<number[]>([7]);
@@ -69,273 +66,278 @@ const DailyInput = () => {
   const [journalEntry, setJournalEntry] = useState("");
   const [selectedMood, setSelectedMood] = useState<MoodType>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
-  // Mock voice-to-text
-  const toggleRecording = () => {
-    if (isRecording) {
-      // Stop recording - add mock transcribed text
-      setIsRecording(false);
-      setJournalEntry((prev) => 
-        prev + (prev ? " " : "") + "Today I felt productive and accomplished my goals."
-      );
-      toast({
-        title: "Recording stopped",
-        description: "Your voice has been transcribed (demo).",
-      });
-    } else {
-      // Start recording
-      setIsRecording(true);
-      toast({
-        title: "Recording started",
-        description: "Speak your thoughts... (demo mode)",
-      });
-    }
+  // 🎤 Speech Recognition (stable)
+  const SpeechRecognition =
+  (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+const recognitionRef = useRef<any>(null);
+
+if (!recognitionRef.current && SpeechRecognition) {
+  const recognition = new SpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.interimResults = false;
+  recognition.continuous = false;
+
+  recognition.onresult = async (event: any) => {
+    const transcript = event.results[0][0].transcript;
+    console.log("🎤 Transcript:", transcript);
+
+    setJournalEntry((prev) =>
+      prev ? `${prev} ${transcript}` : transcript
+    );
+
+    await fetch("http://localhost:5000/voice-text", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: transcript }),
+    });
+
+    setIsRecording(false);
+
+    toast({
+      title: "Voice captured",
+      description: "Your speech was converted to text successfully.",
+    });
   };
 
-  // Handle save
-  const handleSave = () => {
-    // Mock save to localStorage
-    const dailyData = {
-      date: new Date().toISOString(),
-      sleepHours: sleepHours[0],
-      waterIntake: waterIntake[0],
-      exerciseTime: exerciseTime[0],
-      journalEntry,
-      mood: selectedMood,
-    };
+  recognition.onerror = (e: any) => {
+    console.error("Speech error:", e);
+    setIsRecording(false);
+  };
+
+  recognition.onend = () => {
+    setIsRecording(false);
+  };
+
+  recognitionRef.current = recognition;
+}
+const toggleRecording = () => {
+  const recognition = recognitionRef.current;
+
+  if (!recognition) {
+    toast({
+      title: "Not supported",
+      description: "Speech recognition is not supported in this browser.",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  if (isRecording) {
+    recognition.stop();
+    setIsRecording(false);
+  } else {
+    setIsRecording(true);
+    recognition.start();
+
+    toast({
+      title: "Recording started",
+      description: "Speak now 🎙️",
+    });
+  }
+};
+
+
+  // 💾 Save handler
+  const handleSave = async () => {
+
+  // 🔥 GET LOGGED-IN USER
+  const userId = localStorage.getItem("user_id");
+
+
+  if (!userId) {
+    alert("User not logged in");
+    return;
+  }
+
+  const dailyData = {
+    user_id: userId,
+    sleepHours: sleepHours[0],
+    waterIntake: waterIntake[0],
+    exerciseTime: exerciseTime[0],
+    journalEntry,
+    mood: selectedMood,
+  };
+
+  try {
+    const res = await fetch("http://localhost:5000/api/daily-log", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(dailyData),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to save to backend");
+    }
 
     localStorage.setItem("wellnest_daily_input", JSON.stringify(dailyData));
 
     setIsSaved(true);
     toast({
       title: "Saved successfully!",
-      description: "Your daily wellness data has been recorded.",
+      description: "Your daily wellness data has been stored in MongoDB.",
     });
 
-    // Reset saved state after animation
     setTimeout(() => setIsSaved(false), 2000);
-  };
+
+  } catch (error) {
+    console.error(error);
+    toast({
+      title: "Save failed",
+      description: "Could not save data to server",
+      variant: "destructive",
+    });
+  }
+};
 
   return (
     <div className="min-h-screen py-8">
       <div className="container max-w-2xl">
-        {/* Header with back button */}
-        <div className="mb-8">
-          <Button variant="ghost" asChild className="gap-2">
-            <Link to="/tracker">
-              <ArrowLeft className="h-4 w-4" />
-              Back to Tracker
-            </Link>
-          </Button>
-        </div>
+
+        {/* Back */}
+        <Button variant="ghost" asChild className="gap-2 mb-6">
+          <Link to="/tracker">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Tracker
+          </Link>
+        </Button>
 
         {/* Title */}
-        <div className="text-center mb-8 animate-fade-in">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-wellness-peach/30 text-foreground mb-4">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-wellness-peach/30 mb-4">
             <Sparkles className="h-4 w-4" />
-            <span className="text-sm font-medium">Daily Check-in</span>
+            Daily Check-in
           </div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            How's Your Day?
-          </h1>
+          <h1 className="text-3xl font-bold mb-2">How's Your Day?</h1>
           <p className="text-muted-foreground">
             Track your wellness metrics and reflect on your day
           </p>
         </div>
 
-        {/* Input Cards */}
         <div className="space-y-6">
-          {/* Sleep Hours */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Moon className="h-5 w-5 text-wellness-lavender" />
-                Sleep Hours
+
+          {/* Sleep */}
+          <Card className="shadow-lg border-0">
+            <CardHeader>
+              <CardTitle className="flex gap-2 items-center">
+                <Moon className="h-5 w-5" /> Sleep Hours
               </CardTitle>
-              <CardDescription>How many hours did you sleep last night?</CardDescription>
+              <CardDescription>How many hours did you sleep?</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <Slider
-                  value={sleepHours}
-                  onValueChange={setSleepHours}
-                  max={12}
-                  min={0}
-                  step={0.5}
-                  className="flex-1"
-                />
-                <span className="text-2xl font-bold text-foreground w-20 text-right">
-                  {sleepHours[0]} hrs
-                </span>
-              </div>
+            <CardContent className="flex gap-4 items-center">
+              <Slider value={sleepHours} onValueChange={setSleepHours} max={12} step={0.5} />
+              <span className="w-20 text-right font-bold">{sleepHours[0]} hrs</span>
             </CardContent>
           </Card>
 
-          {/* Water Intake */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Droplets className="h-5 w-5 text-wellness-blue" />
-                Water Intake
+          {/* Water */}
+          <Card className="shadow-lg border-0">
+            <CardHeader>
+              <CardTitle className="flex gap-2 items-center">
+                <Droplets className="h-5 w-5" /> Water Intake
               </CardTitle>
-              <CardDescription>How many glasses of water did you drink?</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <Slider
-                  value={waterIntake}
-                  onValueChange={setWaterIntake}
-                  max={12}
-                  min={0}
-                  step={1}
-                  className="flex-1"
-                />
-                <span className="text-2xl font-bold text-foreground w-24 text-right">
-                  {waterIntake[0]} glasses
-                </span>
-              </div>
+            <CardContent className="flex gap-4 items-center">
+              <Slider value={waterIntake} onValueChange={setWaterIntake} max={12} />
+              <span className="w-24 text-right font-bold">{waterIntake[0]} glasses</span>
             </CardContent>
           </Card>
 
-          {/* Exercise Time */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Dumbbell className="h-5 w-5 text-wellness-mint" />
-                Exercise Time
+          {/* Exercise */}
+          <Card className="shadow-lg border-0">
+            <CardHeader>
+              <CardTitle className="flex gap-2 items-center">
+                <Dumbbell className="h-5 w-5" /> Exercise Time
               </CardTitle>
-              <CardDescription>How many minutes did you exercise?</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <Slider
-                  value={exerciseTime}
-                  onValueChange={setExerciseTime}
-                  max={120}
-                  min={0}
-                  step={5}
-                  className="flex-1"
-                />
-                <span className="text-2xl font-bold text-foreground w-20 text-right">
-                  {exerciseTime[0]} min
-                </span>
-              </div>
+            <CardContent className="flex gap-4 items-center">
+              <Slider value={exerciseTime} onValueChange={setExerciseTime} max={120} step={5} />
+              <span className="w-20 text-right font-bold">{exerciseTime[0]} min</span>
             </CardContent>
           </Card>
 
-          {/* Journaling */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <BookOpen className="h-5 w-5 text-primary" />
-                Daily Journal
+          {/* Journal */}
+          <Card className="shadow-lg border-0">
+            <CardHeader>
+              <CardTitle className="flex gap-2 items-center">
+                <BookOpen className="h-5 w-5" /> Daily Journal
               </CardTitle>
-              <CardDescription>Write or speak your thoughts</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <Textarea
-                placeholder="How are you feeling today? What's on your mind?"
+                rows={4}
                 value={journalEntry}
                 onChange={(e) => setJournalEntry(e.target.value)}
-                rows={4}
-                className="resize-none"
+                placeholder="Write or speak your thoughts..."
               />
               <Button
-                variant={isRecording ? "destructive" : "outline"}
                 onClick={toggleRecording}
+                variant={isRecording ? "destructive" : "outline"}
                 className="gap-2"
               >
-                {isRecording ? (
-                  <>
-                    <MicOff className="h-4 w-4" />
-                    Stop Recording
-                  </>
-                ) : (
-                  <>
-                    <Mic className="h-4 w-4" />
-                    Voice to Text
-                  </>
-                )}
+                {isRecording ? <MicOff /> : <Mic />}
+                {isRecording ? "Stop Recording" : "Voice to Text"}
               </Button>
               {isRecording && (
-                <p className="text-sm text-destructive animate-pulse">
-                  🎤 Recording... (Demo mode - will add sample text)
+                <p className="text-sm text-destructive animate-pulse">🎤 Recording…</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Mood */}
+          <Card className="shadow-lg border-0">
+            <CardHeader>
+              <CardTitle className="flex gap-2 items-center">
+                <Heart className="h-5 w-5" /> How are you feeling?
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-center gap-4 mb-4">
+                {(Object.keys(moodConfig) as Exclude<MoodType, null>[]).map((mood) => {
+                  const Icon = moodConfig[mood].icon;
+                  return (
+                    <button
+                      key={mood}
+                      onClick={() => setSelectedMood(mood)}
+                      className={`p-3 rounded-2xl ${
+                        selectedMood === mood
+                          ? moodConfig[mood].color
+                          : "bg-muted"
+                      }`}
+                    >
+                      <Icon className="h-6 w-6" />
+                    </button>
+                  );
+                })}
+              </div>
+              {selectedMood && (
+                <p className="text-center italic text-sm">
+                  “{moodConfig[selectedMood].quote}”
                 </p>
               )}
             </CardContent>
           </Card>
 
-          {/* Mood Selection */}
-          <Card className="border-0 shadow-lg">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Heart className="h-5 w-5 text-pink-500" />
-                How are you feeling?
-              </CardTitle>
-              <CardDescription>Select the mood that best describes you right now</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {/* Mood Icons */}
-              <div className="flex justify-center gap-4 mb-6">
-                {(Object.keys(moodConfig) as Exclude<MoodType, null>[]).map((mood) => {
-                  const config = moodConfig[mood];
-                  const Icon = config.icon;
-                  const isSelected = selectedMood === mood;
-
-                  return (
-                    <button
-                      key={mood}
-                      onClick={() => setSelectedMood(mood)}
-                      className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all duration-300 ${
-                        isSelected
-                          ? `${config.color} scale-110 shadow-lg`
-                          : "bg-muted hover:bg-muted/80"
-                      }`}
-                    >
-                      <Icon className={`h-8 w-8 ${isSelected ? "" : "text-muted-foreground"}`} />
-                      <span className={`text-xs font-medium ${isSelected ? "" : "text-muted-foreground"}`}>
-                        {config.label}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* Quote based on mood */}
-              {selectedMood && (
-                <div className="p-4 bg-muted/50 rounded-xl animate-fade-in">
-                  <p className="text-sm italic text-foreground text-center">
-                    "{moodConfig[selectedMood].quote}"
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Save Button */}
+          {/* Save */}
           <Button
             size="lg"
             onClick={handleSave}
-            className="w-full rounded-full gap-2"
             disabled={isSaved}
+            className="w-full rounded-full gap-2"
           >
-            {isSaved ? (
-              <>
-                <Check className="h-5 w-5" />
-                Saved!
-              </>
-            ) : (
-              <>
-                <Save className="h-5 w-5" />
-                Save Today's Entry
-              </>
-            )}
+            {isSaved ? <Check /> : <Save />}
+            {isSaved ? "Saved!" : "Save Today's Entry"}
           </Button>
 
-          {/* Note */}
           <p className="text-center text-xs text-muted-foreground">
-            📝 Data is stored locally for demo purposes. Backend sync coming soon.
+           📝 Data is securely stored in MongoDB.
+
           </p>
+
         </div>
       </div>
     </div>
