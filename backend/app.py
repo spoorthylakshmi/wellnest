@@ -236,6 +236,20 @@ def predict():
 # -------------------------------
 # Mood Analytics
 # -------------------------------
+@app.route("/api/mood-stats", methods=["GET"])
+def mood_stats():
+    logs = list(daily_logs.find())
+
+    mood_count = {}
+    for log in logs:
+        mood = log.get("mood", "unknown")
+        mood_count[mood] = mood_count.get(mood, 0) + 1
+
+    return jsonify({
+        "status": "success",
+        "data": mood_count
+    })
+
 
     
 
