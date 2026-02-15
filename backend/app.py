@@ -448,7 +448,26 @@ def get_tracker(user_id):
         # --------------------
         # RECENT ACTIVITIES
         # --------------------
-     
+      recent = [
+            {
+                "action": "Logged daily wellness data",
+                "time": log["date"].strftime("%b %d"),
+                "points": "+10"
+            }
+            for log in logs[:5]
+        ]
+
+        return jsonify({
+            "streak": {
+                "current": current_streak,
+                "longest": longest,
+                "thisWeek": this_week
+            },
+            "progress": progress,
+            "recentActivities": recent
+        })
+
+
 
 # -------------------------------
 # Run Server
