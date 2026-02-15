@@ -423,7 +423,16 @@ def get_tracker(user_id):
         # --------------------
         # THIS WEEK
         # --------------------
-        
+        today = datetime.utcnow().date()
+        week_start = today - timedelta(days=today.weekday())
+        this_week = [False] * 7
+
+        for log in logs:
+            d = log["date"].date()
+            if week_start <= d <= today:
+                this_week[d.weekday()] = True
+
+
 
         # --------------------
         # PROGRESS (TEMP / BASIC)
