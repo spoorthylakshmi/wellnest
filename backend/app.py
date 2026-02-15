@@ -215,7 +215,24 @@ def predict():
     emotion = label_map.get(int(prediction), "unknown")
 
     # 🔊 Emotion → Sound mapping
-   #yet to add sound files and mapping
+    sound_map = {
+        "sadness": "rain.mp3",
+        "anger": "om.mp3",
+        "fear": "jungle.mp3",
+        "joy": "happy.mp3",
+        "love": "calm.mp3",
+        "surprise": "waves.mp3",
+        "stress": "bowls.mp3"
+    }
+
+    sound = sound_map.get(emotion, "calm.mp3")
+
+    return jsonify({
+        "text": text,
+        "predicted_label": int(prediction),
+        "emotion": emotion,
+        "sound": sound
+    })
 # -------------------------------
 # Mood Analytics
 # -------------------------------
