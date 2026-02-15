@@ -437,7 +437,13 @@ def get_tracker(user_id):
         # --------------------
         # PROGRESS (TEMP / BASIC)
         # --------------------
-      
+          progress = [
+            {"label": "Mental Wellness", "progress": 70},
+            {"label": "Physical Activity", "progress": 60},
+            {"label": "Sleep Quality", "progress": 80},
+            {"label": "Mindfulness", "progress": 65},
+        ]
+
       
         # --------------------
         # RECENT ACTIVITIES
