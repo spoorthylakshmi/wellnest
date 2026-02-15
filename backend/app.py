@@ -215,24 +215,7 @@ def predict():
     emotion = label_map.get(int(prediction), "unknown")
 
     # 🔊 Emotion → Sound mapping
-    sound_map = {
-        "sadness": "rain.mp3",
-        "anger": "om.mp3",
-        "fear": "jungle.mp3",
-        "joy": "happy.mp3",
-        "love": "calm.mp3",
-        "surprise": "waves.mp3",
-        "stress": "bowls.mp3"
-    }
-
-    sound = sound_map.get(emotion, "calm.mp3")
-
-    return jsonify({
-        "text": text,
-        "predicted_label": int(prediction),
-        "emotion": emotion,
-        "sound": sound
-    })
+   #yet to add sound files and mapping
 # -------------------------------
 # Mood Analytics
 # -------------------------------
@@ -425,25 +408,7 @@ def get_tracker(user_id):
         # --------------------
         # RECENT ACTIVITIES
         # --------------------
-        recent = [
-            {
-                "action": "Logged daily wellness data",
-                "time": log["date"].strftime("%b %d"),
-                "points": "+10"
-            }
-            for log in logs[:5]
-        ]
-
-        return jsonify({
-            "streak": {
-                "current": current_streak,
-                "longest": longest,
-                "thisWeek": this_week
-            },
-            "progress": progress,
-            "recentActivities": recent
-        })
-
+     
 
 # -------------------------------
 # Run Server
