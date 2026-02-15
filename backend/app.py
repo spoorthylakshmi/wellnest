@@ -1,19 +1,24 @@
+import os
+from dotenv import load_dotenv
+from google import genai
+import bcrypt
+from datetime import datetime, timedelta
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import joblib
-import os
-from database.db import users, daily_logs
-from datetime import datetime
-
-# 🔹 MongoDB + Streak imports
 from bson import ObjectId
-from database.db import users
+from database.db import db, users, daily_logs
 from database.streak import update_visit_streak
-
-# 🔹 Chatbot import
 from chatbot.engine import get_bot_reply
 
+load_dotenv()
+
+gemini_client = genai.Client(
+    api_key=os.getenv("GEMINI_API_KEY")
+)
+
 # 🔹 Wellness videos import (NEW)
+# TODO: Implement videos module
 # from videos import videos
 
 app = Flask(__name__)
@@ -39,6 +44,67 @@ except Exception as e:
     model = None
     vectorizer = None
 
+@app.route("/api/signup", methods=["POST"])
+def signup():
+    data = request.json
+
+    name = data.get("name")
+    email = data.get("email")
+    password = data.get("password")
+
+    if not name or not email or not password:
+        return jsonify({"message": "All fields are required"}), 400
+
+    # Check if user already exists
+    if users.find_one({"email": email}):
+        return jsonify({"message": "User already exists"}), 409
+
+    # Hash password
+    hashed_password = bcrypt.hashpw(
+        password.encode("utf-8"),
+        bcrypt.gensalt()
+    )
+
+    user = {
+        "name": name,
+        "email": email,
+        "password": hashed_password,
+        "createdAt": datetime.utcnow()
+    }
+
+    result = users.insert_one(user)
+
+    return jsonify({
+        "message": "Signup successful",
+        "user_id": str(result.inserted_id),
+        "name": name
+    }), 201
+@app.route("/api/login", methods=["POST"])
+def login():
+    data = request.json
+
+    email = data.get("email")
+    password = data.get("password")
+
+    if not email or not password:
+        return jsonify({"message": "Email and password required"}), 400
+
+    user = users.find_one({"email": email})
+
+    if not user:
+        return jsonify({"message": "Invalid email or password"}), 401
+
+    if not bcrypt.checkpw(
+        password.encode("utf-8"),
+        user["password"]
+    ):
+        return jsonify({"message": "Invalid email or password"}), 401
+
+    return jsonify({
+        "message": "Login successful",
+        "user_id": str(user["_id"]),
+        "name": user["name"]
+    }), 200
 
 # -------------------------------
 # Home Route
@@ -46,6 +112,24 @@ except Exception as e:
 @app.route('/')
 def home():
     return "WellNest backend is running successfully!"
+
+@app.route("/api/physical-health/<user_id>", methods=["GET"])
+def get_physical_health(user_id):
+    data = daily_logs.find_one(
+        {},
+        sort=[("createdAt", -1)]   # latest entry
+    )
+
+    if not data:
+        return jsonify({"message": "No physical health data found"}), 404
+
+    return jsonify({
+        "water_glasses": data.get("waterIntake", 0),
+        "exercise_minutes": data.get("exerciseTime", 0),
+        "sleep_hours": data.get("sleepHours", 0),
+        "date": data.get("createdAt")
+    }), 200
+
 
 
 # -------------------------------
@@ -77,11 +161,13 @@ def save_daily_log():
         print("🔥 DAILY LOG RECEIVED:", data)
 
         log = {
+            "user_id": ObjectId(data.get("user_id")),
             "sleepHours": data.get("sleepHours"),
             "waterIntake": data.get("waterIntake"),
             "exerciseTime": data.get("exerciseTime"),
             "journalEntry": data.get("journalEntry"),
             "mood": data.get("mood"),
+            "date": datetime.utcnow(),               # ✅ CORRECT
             "createdAt": datetime.utcnow()
         }
 
@@ -150,67 +236,80 @@ def predict():
 # -------------------------------
 # Mood Analytics
 # -------------------------------
-@app.route("/api/mood-stats", methods=["GET"])
-def mood_stats():
-    logs = list(daily_logs.find())
 
-    mood_count = {}
-    for log in logs:
-        mood = log.get("mood", "unknown")
-        mood_count[mood] = mood_count.get(mood, 0) + 1
-
-    return jsonify({
-        "status": "success",
-        "data": mood_count
-    })
+    
 
 # -------------------------------
 # Get Daily Wellness Logs
 # -------------------------------
-@app.route("/api/daily-log", methods=["GET"])
-def get_daily_logs():
-    logs = list(daily_logs.find().sort("createdAt", -1))
+@app.route("/api/daily-log/<user_id>", methods=["GET"])
+def get_user_logs(user_id):
+    try:
+        logs = list(daily_logs.find({"user_id": ObjectId(user_id)}))
 
-    for log in logs:
-        log["_id"] = str(log["_id"])  # convert ObjectId for JSON
+        cleaned_logs = []
+        for log in logs:
+            cleaned_logs.append({
+                "id": str(log["_id"]),
+                "user_id": str(log["user_id"]),
+                "mood": log.get("mood"),
+                "sleepHours": log.get("sleepHours", 0),
+                "exerciseTime": log.get("exerciseTime", 0),
+                "waterIntake": log.get("waterIntake", 0),
+                "createdAt": log.get("createdAt").isoformat() if log.get("createdAt") else None,
+            })
 
-    return jsonify({
-        "status": "success",
-        "data": logs
-    })
+        return jsonify(cleaned_logs), 200
 
+    except Exception as e:
+        print("ERROR:", e)
+        return jsonify({"error": "Failed to fetch logs"}), 500
+
+@app.route("/api/badges", methods=["GET"])
+def get_badges():
+    badges = list(db.badges.find({}, {"_id": 0}))
+    return jsonify(badges)
 # -------------------------------
 # Chatbot API
 # -------------------------------
-@app.route('/api/chatbot', methods=['POST'])
-def chatbot():
-    data = request.get_json()
-    if not data or 'message' not in data:
-        return jsonify({'error': 'Message required'}), 400
+@app.route("/api/chat", methods=["POST"])
+def chat():
+    data = request.json
+    user_message = data.get("message") if data else None
 
-    reply = get_bot_reply(data['message'])
-    return jsonify({"reply": reply})
+    if not user_message:
+        return jsonify({"reply": "Please say something."}), 400
+
+    prompt = f"""
+    You are Wellnest, a calm and empathetic wellness assistant.
+    You do not provide medical diagnoses.
+    Be supportive and concise.
+
+    User: {user_message}
+    """
+
+    try:
+        response = gemini_client.models.generate_content(
+            model="models/gemini-2.5-flash",
+            contents=prompt
+        )
+
+        reply = response.candidates[0].content.parts[0].text
+
+        return jsonify({"reply": reply}), 200
+
+    except Exception as e:
+        print("🔥 GEMINI CHAT ERROR:", repr(e))
+        return jsonify({
+            "reply": "Sorry, I'm having trouble responding right now."
+        }), 500
+
+@app.route("/api/list-models", methods=["GET"])
+def list_models():
+    models = gemini_client.models.list()
+    return jsonify([m.name for m in models])
 
 
-# -------------------------------
-# Wellness Videos (NEW)
-# -------------------------------
-@app.route("/api/videos", methods=["GET"])
-def get_videos():
-    return jsonify({
-        "status": "success",
-        "data": videos
-    })
-
-
-# 🔥 WEBSITE VISIT STREAK ROUTE
-@app.route("/api/videos/<category>", methods=["GET"])
-def get_videos_by_category(category):
-    filtered = [v for v in videos if v["category"] == category]
-    return jsonify({
-        "category": category,
-        "data": filtered
-    })
 
 
 # -------------------------------
@@ -232,6 +331,111 @@ def website_visit(user_id):
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+@app.route("/api/tracker/<user_id>", methods=["GET"])
+def get_tracker(user_id):
+    from datetime import datetime, timedelta
+    from bson import ObjectId
+
+    logs = list(
+        daily_logs.find(
+            {"user_id": ObjectId(user_id)}
+        ).sort("date", -1)
+    )
+    print("USER ID FROM FRONTEND:", user_id)
+
+    print("LOGS FOUND:", logs)
+    print("RAW LOGS:", logs)
+    print("TYPE OF DATE:", type(logs[0]["date"]) if logs else "No logs")
+
+    if not logs:
+        return jsonify({
+            "streak": {
+                "current": 0,
+                "longest": 0,
+                "thisWeek": [False] * 7
+            },
+            "progress": [],
+            "recentActivities": []
+        })
+
+    # --------------------
+    # STREAK CALCULATION
+    # --------------------
+    # Get unique log dates (remove duplicates)
+    try:
+        log_dates = sorted(
+            list({log["date"].date() for log in logs}),
+            reverse=True
+        )
+    except Exception as e:
+        print(f"Error extracting log dates: {e}")
+        log_dates = []
+
+    current_streak = 0
+    longest = 0
+
+    if log_dates:
+        today = datetime.utcnow().date()
+        
+        # Find the most recent log date
+        most_recent_log = log_dates[0]
+        days_since_last_log = (today - most_recent_log).days
+
+        # Calculate current streak (including today and yesterday)
+        if days_since_last_log <= 1:
+            current_streak = 1
+            # Count consecutive days backwards from the most recent log
+            for i in range(1, len(log_dates)):
+                if (log_dates[i - 1] - log_dates[i]).days == 1:
+                    current_streak += 1
+                else:
+                    break
+        else:
+            current_streak = 0
+
+        # Calculate longest streak across all dates
+        if len(log_dates) > 0:
+            temp_streak = 1
+            for i in range(1, len(log_dates)):
+                if (log_dates[i - 1] - log_dates[i]).days == 1:
+                    temp_streak += 1
+                    longest = max(longest, temp_streak)
+                else:
+                    temp_streak = 1
+            longest = max(longest, temp_streak) if temp_streak >= 1 else 1
+
+        # --------------------
+        # THIS WEEK
+        # --------------------
+        
+
+        # --------------------
+        # PROGRESS (TEMP / BASIC)
+        # --------------------
+      
+        # --------------------
+        # RECENT ACTIVITIES
+        # --------------------
+        recent = [
+            {
+                "action": "Logged daily wellness data",
+                "time": log["date"].strftime("%b %d"),
+                "points": "+10"
+            }
+            for log in logs[:5]
+        ]
+
+        return jsonify({
+            "streak": {
+                "current": current_streak,
+                "longest": longest,
+                "thisWeek": this_week
+            },
+            "progress": progress,
+            "recentActivities": recent
+        })
 
 
 # -------------------------------
