@@ -64,15 +64,15 @@ Create `backend/.env`:
 MONGO_URI=your_mongodb_connection_string
 GEMINI_API_KEY=your_gemini_api_key
 ```
-(Use the exact variable names your code reads.)
 
 
 
 ## Limitations and Future Work
 - Bag-of-words ignores word order, so it can miss negation and sarcasm
 - Possible upgrade: a transformer-based emotion model
-- [Anything else you'd improve]
+- 
 
-## Team
-- [Your name]: [your part of the project]
-- [Teammates, if any]
+## Teammates
+- Spoorthy Lakshmi G
+- Ashwini
+Seemalahari d
