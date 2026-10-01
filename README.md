@@ -66,9 +66,7 @@ GEMINI_API_KEY=your_gemini_api_key
 ```
 (Use the exact variable names your code reads.)
 
-## Screenshots
-![Dashboard](screenshots/dashboard.png)
-![Chat](screenshots/chat.png)
+
 
 ## Limitations and Future Work
 - Bag-of-words ignores word order, so it can miss negation and sarcasm
