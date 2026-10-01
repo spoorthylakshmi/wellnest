@@ -75,4 +75,5 @@ GEMINI_API_KEY=your_gemini_api_key
 ## Teammates
 - Spoorthy Lakshmi G
 - Ashwini
-Seemalahari d
+- Seemalahari d
+
